@@ -1,0 +1,182 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light theme - Refined neutral palette with sharp accent */
+    --background: 0 0% 99%;
+    --foreground: 220 13% 13%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 13% 13%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 13% 13%;
+
+    --primary: 220 13% 13%;
+    --primary-foreground: 0 0% 99%;
+
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 13% 13%;
+
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+
+    --accent: 220 14% 96%;
+    --accent-foreground: 220 13% 13%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 99%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 220 13% 13%;
+
+    --radius: 0.5rem;
+
+    /* ERD specific tokens */
+    --erd-pk: 38 92% 50%;        /* Amber - Primary Key */
+    --erd-fk: 217 91% 60%;       /* Blue - Foreign Key */
+    --erd-unique: 271 76% 53%;   /* Purple - Unique */
+    --erd-nullable: 220 9% 46%;  /* Gray - Nullable */
+  }
+
+  .dark {
+    /* Dark theme - Deep, rich, with sharp contrast */
+    --background: 220 15% 7%;
+    --foreground: 220 14% 96%;
+
+    --card: 220 15% 9%;
+    --card-foreground: 220 14% 96%;
+
+    --popover: 220 15% 9%;
+    --popover-foreground: 220 14% 96%;
+
+    --primary: 220 14% 96%;
+    --primary-foreground: 220 15% 7%;
+
+    --secondary: 220 13% 14%;
+    --secondary-foreground: 220 14% 96%;
+
+    --muted: 220 13% 14%;
+    --muted-foreground: 220 9% 60%;
+
+    --accent: 220 13% 16%;
+    --accent-foreground: 220 14% 96%;
+
+    --destructive: 0 63% 50%;
+    --destructive-foreground: 220 14% 96%;
+
+    --border: 220 13% 18%;
+    --input: 220 13% 18%;
+    --ring: 220 14% 70%;
+
+    --erd-pk: 38 92% 60%;
+    --erd-fk: 217 91% 65%;
+    --erd-unique: 271 76% 65%;
+    --erd-nullable: 220 9% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv11", "ss01";
+    font-variation-settings: "opsz" 32;
+    /* VS Code's webview host injects its own default `body { padding: 0 20px }`
+       for simple content pages; !important reclaims full-bleed layout regardless
+       of that rule's position in the cascade. No-op outside VS Code. */
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  html, body, #root {
+    @apply h-full overflow-hidden;
+  }
+}
+
+/* Custom scrollbar */
+@layer utilities {
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/40;
+  }
+
+  /* Grain texture for subtle depth */
+  .grain {
+    position: relative;
+  }
+  .grain::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+    opacity: 0.015;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+  }
+}
+
+/* React Flow custom theming */
+.react-flow {
+  @apply bg-background;
+}
+
+.react-flow__background {
+  @apply opacity-50;
+}
+
+.react-flow__node {
+  @apply font-mono;
+}
+
+.react-flow__handle {
+  @apply !w-2 !h-2 !border-2 !border-background !bg-foreground/40;
+  transition: all 0.15s ease;
+}
+
+.react-flow__handle:hover {
+  @apply !bg-foreground !scale-150;
+}
+
+.react-flow__edge-path {
+  stroke-width: 1.5;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  @apply !stroke-primary;
+  stroke-width: 2;
+}
+
+.react-flow__controls {
+  @apply !shadow-lg !border !border-border !bg-card !rounded-lg overflow-hidden;
+}
+
+.react-flow__controls-button {
+  @apply !bg-card !border-border hover:!bg-accent !text-foreground transition-colors;
+}
+
+.react-flow__minimap {
+  @apply !bg-card !border !border-border !rounded-lg overflow-hidden;
+}
+
+.react-flow__attribution {
+  @apply !bg-transparent;
+}
+
+/* Selection box */
+.react-flow__selection {
+  @apply !border-primary/60 !bg-primary/5;
+}

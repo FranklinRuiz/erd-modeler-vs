@@ -1,0 +1,9 @@
+node_modules/
+dist/
+out/
+webview-ui/dist/
+webview-ui/node_modules/
+*.vsix
+.vscode-test/
+prueba/
+ui.png
