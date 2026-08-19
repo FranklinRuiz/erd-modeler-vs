@@ -1,0 +1,77 @@
+{
+  "name": "schemacraft",
+  "displayName": "SchemaCraft",
+  "description": "Design and visualize SQL Server database schemas visually — drag-and-drop ER diagrams with instant T-SQL and DBML preview, right inside VS Code.",
+  "version": "0.1.1",
+  "publisher": "franklin-ruiz",
+  "license": "MIT",
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FranklinRuiz/erd-modeler-vs"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "erdModeler.newDiagram",
+        "title": "SchemaCraft: New Diagram..."
+      },
+      {
+        "command": "erdModeler.openFile",
+        "title": "SchemaCraft: Open Diagram File..."
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "erdModeler.newDiagram"
+        },
+        {
+          "command": "erdModeler.openFile"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "erdModeler.newDiagram",
+          "when": "explorerResourceIsFolder",
+          "group": "navigation"
+        }
+      ]
+    },
+    "customEditors": [
+      {
+        "viewType": "erdModeler.diagramEditor",
+        "displayName": "SchemaCraft",
+        "selector": [
+          {
+            "filenamePattern": "*.asto"
+          }
+        ],
+        "priority": "default"
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "node esbuild.js",
+    "watch": "node esbuild.js --watch",
+    "build:webview": "cd webview-ui && npm install && npm run build",
+    "vscode:prepublish": "npm run build:webview && node esbuild.js --production",
+    "package": "npm run vscode:prepublish && vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.17",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.2.1",
+    "esbuild": "^0.24.0",
+    "typescript": "~5.6.2"
+  }
+}
