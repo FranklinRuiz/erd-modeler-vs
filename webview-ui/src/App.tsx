@@ -24,9 +24,9 @@ function App() {
               <Toolbar />
               <main className="flex-1 overflow-hidden relative">
                 <Canvas />
+                <PropertiesPanel />
               </main>
             </div>
-            <PropertiesPanel />
           </div>
         </div>
         <Toaster

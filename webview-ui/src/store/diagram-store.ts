@@ -701,7 +701,7 @@ function normalizeColumn(column: Column): Column {
     ...column,
     isNullable: column.isPrimaryKey ? false : column.isNullable,
     isUnique: column.isPrimaryKey ? true : column.isUnique,
-    isAutoIncrement: column.isAutoIncrement && ['INT', 'BIGINT', 'SMALLINT', 'TINYINT'].includes(column.type),
+    isAutoIncrement: column.isAutoIncrement && column.isPrimaryKey && ['INT', 'BIGINT', 'SMALLINT', 'TINYINT'].includes(column.type),
   };
 }
 

@@ -106,7 +106,7 @@ export function Sidebar() {
 
           <div className="w-6 border-t border-border my-1" />
 
-          <div className="flex-1 w-full min-h-0 overflow-y-auto flex flex-col items-center gap-1.5 px-1.5">
+          <div className="flex-1 w-full min-h-0 overflow-y-auto flex flex-col items-center gap-1.5 px-1.5 py-1">
             {tables.map((table) => (
               <TableChip
                 key={table.id}

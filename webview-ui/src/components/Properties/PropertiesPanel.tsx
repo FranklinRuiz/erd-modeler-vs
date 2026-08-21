@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   X,
   Plus,
@@ -39,6 +39,9 @@ const BASE_TYPES = [
   'UNIQUEIDENTIFIER', 'XML', 'VARBINARY', 'BINARY',
   'TEXT', 'NTEXT', 'IMAGE', 'SQL_VARIANT', 'HIERARCHYID', 'GEOMETRY', 'GEOGRAPHY',
 ];
+
+// SQL Server only allows IDENTITY on an integer primary key column.
+const AUTO_INCREMENT_TYPES = new Set(['INT', 'BIGINT', 'SMALLINT', 'TINYINT']);
 
 const PARAM_TYPES = new Set([
   'NVARCHAR', 'VARCHAR', 'CHAR', 'NCHAR',
@@ -99,6 +102,9 @@ function validateTypeParam(base: string, raw: string): string | null {
   return null;
 }
 
+// Mirrors the 0.2s slide-out-right animation duration so unmount waits for it to finish.
+const CLOSE_ANIMATION_MS = 200;
+
 export function PropertiesPanel() {
   const isOpen = useUIStore((s) => s.isPropertiesOpen);
   const setOpen = useUIStore((s) => s.setPropertiesOpen);
@@ -107,7 +113,29 @@ export function PropertiesPanel() {
   const selectTable = useUIStore((s) => s.selectTable);
   const selectEdge = useUIStore((s) => s.selectEdge);
 
-  if (!isOpen) return null;
+  // Keeps the panel mounted for one extra tick after isOpen flips false, so the
+  // slide-out animation gets to play instead of the panel just disappearing.
+  const [rendered, setRendered] = useState(isOpen);
+  useEffect(() => {
+    if (isOpen) {
+      setRendered(true);
+    } else {
+      const timer = setTimeout(() => setRendered(false), CLOSE_ANIMATION_MS);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
+  // handleClose clears the selection in the same update that closes the panel, which
+  // would otherwise flip the still-animating-out panel to the Validation view for the
+  // closing animation's duration. Freeze on the last selection seen while open instead,
+  // so the panel keeps showing what it was showing right up until it unmounts.
+  const lastViewRef = useRef({ selectedTableId, selectedEdgeId });
+  if (isOpen) {
+    lastViewRef.current = { selectedTableId, selectedEdgeId };
+  }
+  const { selectedTableId: viewTableId, selectedEdgeId: viewEdgeId } = lastViewRef.current;
+
+  if (!rendered) return null;
 
   const handleClose = () => {
     setOpen(false);
@@ -116,10 +144,13 @@ export function PropertiesPanel() {
   };
 
   return (
-    <aside className="w-[28rem] border-l border-border bg-card flex flex-col h-full animate-slide-in-right">
-      <div className="px-4 py-3 border-b border-border flex items-center justify-between flex-shrink-0">
+    <aside className={cn(
+      'absolute right-0 top-0 z-20 w-[28rem] h-full border-l border-border bg-card shadow-2xl flex flex-col',
+      isOpen ? 'animate-slide-in-right' : 'animate-slide-out-right',
+    )}>
+      <div className="h-9 px-4 border-b border-border flex items-center justify-between flex-shrink-0">
         <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-          {selectedTableId ? 'Table Designer' : selectedEdgeId ? 'Relation Designer' : 'Validation'}
+          {viewTableId ? 'Table Designer' : viewEdgeId ? 'Relation Designer' : 'Validation'}
         </h2>
         <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleClose}>
           <X className="w-3.5 h-3.5" />
@@ -127,9 +158,9 @@ export function PropertiesPanel() {
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        {selectedTableId && <TableProperties tableId={selectedTableId} />}
-        {selectedEdgeId && <EdgeProperties edgeId={selectedEdgeId} />}
-        {!selectedTableId && !selectedEdgeId && <ValidationProperties />}
+        {viewTableId && <TableProperties tableId={viewTableId} />}
+        {viewEdgeId && <EdgeProperties edgeId={viewEdgeId} />}
+        {!viewTableId && !viewEdgeId && <ValidationProperties />}
       </div>
     </aside>
   );
@@ -199,7 +230,7 @@ function TableProperties({ tableId }: { tableId: string }) {
       </div>
 
       <div className="rounded-md border border-border overflow-hidden">
-        <div className="flex items-center gap-2 px-2 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground bg-muted/50 border-b border-border/50">
+        <div className="flex items-center gap-2 pl-2 pr-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground bg-muted/50 border-b border-border/50">
           <div className="w-3 flex-shrink-0" />
           <span className="flex-1 min-w-0">Name</span>
           <span className="w-24 flex-shrink-0">Type</span>
@@ -230,6 +261,7 @@ function ColumnEditor({ column, tableId, index, totalColumns }: { column: Column
 
   const { base, param } = parseTypeParam(column.type);
   const showLongitud = PARAM_TYPES.has(base);
+  const canAutoIncrement = column.isPrimaryKey && AUTO_INCREMENT_TYPES.has(base);
   const [localParam, setLocalParam] = useState(param);
 
   useEffect(() => {
@@ -255,7 +287,7 @@ function ColumnEditor({ column, tableId, index, totalColumns }: { column: Column
 
   return (
     <div className={cn('bg-background/50 transition-all', expanded && 'bg-accent/20')}>
-      <div className="flex items-center gap-2 px-2 py-1.5">
+      <div className="flex items-center gap-2 pl-2 pr-3 py-1.5">
         <GripVertical className="w-3 h-3 text-muted-foreground/40 flex-shrink-0" />
 
         <Input
@@ -265,15 +297,16 @@ function ColumnEditor({ column, tableId, index, totalColumns }: { column: Column
           placeholder="column_name"
         />
 
-        <select
-          value={BASE_TYPES.includes(base) ? base : 'VARCHAR'}
-          onChange={(e) => handleTypeChange(e.target.value)}
-          className="h-7 w-24 flex-shrink-0 px-1.5 text-xs font-mono rounded-md border border-border bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer"
-        >
-          {BASE_TYPES.map((t) => (
-            <option key={t} value={t}>{t.toLowerCase()}</option>
-          ))}
-        </select>
+        <Select value={BASE_TYPES.includes(base) ? base : 'VARCHAR'} onValueChange={handleTypeChange}>
+          <SelectTrigger title={base} className="h-7 w-24 flex-shrink-0 px-1.5 text-xs font-mono">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {BASE_TYPES.map((t) => (
+              <SelectItem key={t} value={t} className="text-xs font-mono">{t.toLowerCase()}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         <div className="flex items-center gap-0.5 flex-shrink-0">
           <ToggleIcon active={column.isPrimaryKey} onClick={() => updateColumn(tableId, column.id, { isPrimaryKey: !column.isPrimaryKey, isNullable: column.isPrimaryKey ? column.isNullable : false })} color="hsl(var(--erd-pk))" icon={<Key className="w-3 h-3" />} title="Primary Key" />
@@ -288,25 +321,30 @@ function ColumnEditor({ column, tableId, index, totalColumns }: { column: Column
 
       {expanded && (
         <div className="px-2 pb-2 space-y-2 border-t border-border/50 pt-2">
-          <div className="grid grid-cols-2 gap-2">
-            <SwitchRow label="Not Null" checked={!column.isNullable} onChange={(v) => updateColumn(tableId, column.id, { isNullable: !v })} disabled={column.isPrimaryKey} />
-            <SwitchRow label="Auto Increment" checked={column.isAutoIncrement} onChange={(v) => updateColumn(tableId, column.id, { isAutoIncrement: v })} />
+          <div className={cn('grid gap-2', canAutoIncrement ? 'grid-cols-2' : 'grid-cols-1')}>
+            <SwitchRow compact label="Not Null" checked={!column.isNullable} onChange={(v) => updateColumn(tableId, column.id, { isNullable: !v })} disabled={column.isPrimaryKey} />
+            {canAutoIncrement && (
+              <SwitchRow compact label="Auto Increment" checked={column.isAutoIncrement} onChange={(v) => updateColumn(tableId, column.id, { isAutoIncrement: v })} />
+            )}
           </div>
-          {showLongitud && (
-            <Field label="Length / precision">
-              <Input
-                value={localParam}
-                onChange={(e) => setLocalParam(e.target.value)}
-                onBlur={(e) => commitLongitud(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') commitLongitud(localParam); }}
-                className="h-7 text-xs font-mono"
-                placeholder="e.g. 50 or 10,2"
-              />
+          {/* Short-value fields share a row; Comment stays full-width since it holds free text. */}
+          <div className={cn('grid gap-2', showLongitud ? 'grid-cols-2' : 'grid-cols-1')}>
+            {showLongitud && (
+              <Field label="Length / precision">
+                <Input
+                  value={localParam}
+                  onChange={(e) => setLocalParam(e.target.value)}
+                  onBlur={(e) => commitLongitud(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') commitLongitud(localParam); }}
+                  className="h-7 text-xs font-mono"
+                  placeholder="e.g. 50 or 10,2"
+                />
+              </Field>
+            )}
+            <Field label="Default value" optional>
+              <Input value={column.defaultValue ?? ''} onChange={(e) => updateColumn(tableId, column.id, { defaultValue: e.target.value })} className="h-7 text-xs font-mono" placeholder="NULL" />
             </Field>
-          )}
-          <Field label="Default value" optional>
-            <Input value={column.defaultValue ?? ''} onChange={(e) => updateColumn(tableId, column.id, { defaultValue: e.target.value })} className="h-7 text-xs font-mono" placeholder="NULL" />
-          </Field>
+          </div>
           <Field label="Comment" optional>
             <Input value={column.comment ?? ''} onChange={(e) => updateColumn(tableId, column.id, { comment: e.target.value })} className="h-7 text-xs" placeholder="Description..." />
           </Field>
@@ -474,9 +512,9 @@ function ToggleIcon({ active, onClick, color, icon, title }: { active: boolean; 
   );
 }
 
-function SwitchRow({ label, checked, onChange, disabled }: { label: string; checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
+function SwitchRow({ label, checked, onChange, disabled, compact }: { label: string; checked: boolean; onChange: (v: boolean) => void; disabled?: boolean; compact?: boolean }) {
   return (
-    <div className="flex items-center justify-between gap-2">
+    <div className={cn('flex items-center gap-2', !compact && 'justify-between')}>
       <span className="text-xs">{label}</span>
       <Switch checked={checked} onCheckedChange={onChange} disabled={disabled} />
     </div>

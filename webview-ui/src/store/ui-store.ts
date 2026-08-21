@@ -33,7 +33,7 @@ export const useUIStore = create<UIStore>()(
       selectedEdgeId: null,
       selectedTableIds: [],
       hoveredTableId: null,
-      isPropertiesOpen: true,
+      isPropertiesOpen: false,
       isSidebarCollapsed: false,
 
       toggleTheme: () =>
@@ -59,12 +59,16 @@ export const useUIStore = create<UIStore>()(
     {
       name: THEME_KEY,
       version: 1,
+      // Only durable preferences survive a reload — selection/panel-open state is
+      // session-scoped, so a fresh reload never re-opens Table Designer/Validation
+      // on its own.
+      partialize: (state) => ({ theme: state.theme, isSidebarCollapsed: state.isSidebarCollapsed }),
       migrate: (persisted, version) => {
-        const state = persisted as Partial<UIStore>;
-        if (version < 1) {
-          return { ...state, theme: 'light' as Theme };
-        }
-        return state;
+        const state = persisted as { theme?: Theme; isSidebarCollapsed?: boolean };
+        return {
+          theme: version < 1 ? ('light' as Theme) : (state.theme ?? 'light'),
+          isSidebarCollapsed: state.isSidebarCollapsed ?? false,
+        };
       },
     }
   )
