@@ -12,6 +12,8 @@ import {
   AlertTriangle,
   CircleAlert,
   Table2,
+  Check,
+  ArrowDown,
 } from 'lucide-react';
 import { Input } from '@/components/UI/input';
 import { Button } from '@/components/UI/button';
@@ -147,14 +149,25 @@ function TableProperties({ tableId }: { tableId: string }) {
 
       <Field label="Color / module">
         <div className="flex gap-1.5 flex-wrap">
-          {TABLE_COLORS.map((color) => (
-            <button
-              key={color}
-              onClick={() => updateTable(tableId, { color })}
-              className={cn('w-6 h-6 rounded-md transition-all', table.color === color ? 'ring-2 ring-offset-1 ring-offset-card ring-foreground/50 scale-110' : 'hover:scale-110')}
-              style={{ backgroundColor: color }}
-            />
-          ))}
+          {TABLE_COLORS.map((color) => {
+            const isSelected = table.color === color;
+            return (
+              <button
+                key={color}
+                onClick={() => updateTable(tableId, { color })}
+                title={color}
+                style={{ backgroundColor: color }}
+                className={cn(
+                  'relative w-[18px] h-[18px] rounded-full transition-transform hover:scale-110',
+                  isSelected && 'ring-2 ring-offset-2 ring-offset-card'
+                )}
+              >
+                {isSelected && (
+                  <Check className="w-2.5 h-2.5 text-white absolute inset-0 m-auto drop-shadow-sm" strokeWidth={3} />
+                )}
+              </button>
+            );
+          })}
         </div>
       </Field>
 
@@ -312,12 +325,22 @@ function EdgeProperties({ edgeId }: { edgeId: string }) {
 
   return (
     <div className="px-4 py-4 space-y-5">
-      <div className="rounded-lg border border-border p-3 bg-background/50 space-y-2">
-        <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Parent / source</div>
-        <div className="font-mono text-sm"><span className="text-muted-foreground">{sourceTable?.name}.</span><span className="font-semibold">{sourceColumn?.name}</span></div>
-        <div className="text-center text-muted-foreground text-lg">↓</div>
-        <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Child / target</div>
-        <div className="font-mono text-sm"><span className="text-muted-foreground">{targetTable?.name}.</span><span className="font-semibold">{targetColumn?.name}</span></div>
+      <div className="rounded-lg border border-border bg-background/50 overflow-hidden">
+        <div className="px-3 py-2.5 space-y-1">
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Parent / source</div>
+          <div className="font-mono text-sm"><span className="text-muted-foreground">{sourceTable?.name}.</span><span className="font-semibold">{sourceColumn?.name}</span></div>
+        </div>
+        <div className="flex items-center gap-2 px-3">
+          <div className="flex-1 h-px bg-border" />
+          <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+            <ArrowDown className="w-4 h-4 text-muted-foreground" />
+          </div>
+          <div className="flex-1 h-px bg-border" />
+        </div>
+        <div className="px-3 py-2.5 space-y-1">
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Child / target</div>
+          <div className="font-mono text-sm"><span className="text-muted-foreground">{targetTable?.name}.</span><span className="font-semibold">{targetColumn?.name}</span></div>
+        </div>
       </div>
 
       <Field label="Relation name / FK name">

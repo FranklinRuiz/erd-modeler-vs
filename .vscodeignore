@@ -1,5 +1,6 @@
 .vscode/**
 .vscode-test/**
+.idea/**
 src/**
 webview-ui/src/**
 webview-ui/public/**
@@ -14,7 +15,6 @@ webview-ui/*.tsbuildinfo
 *.tsbuildinfo
 *.asto
 prueba/**
-ui.png
 node_modules/**
 out/**
 esbuild.js

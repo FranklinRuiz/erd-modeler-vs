@@ -40,25 +40,30 @@ export function Canvas() {
   const onConnect = useDiagramStore((s) => s.onConnect);
   const selectTable = useUIStore((s) => s.selectTable);
   const selectEdge = useUIStore((s) => s.selectEdge);
+  const setActiveSelection = useUIStore((s) => s.setActiveSelection);
   const setSelectedTableIds = useUIStore((s) => s.setSelectedTableIds);
   const selectedTableId = useUIStore((s) => s.selectedTableId);
   const selectedTableIds = useUIStore((s) => s.selectedTableIds);
   const hoveredTableId = useUIStore((s) => s.hoveredTableId);
   const setHoveredTableId = useUIStore((s) => s.setHoveredTableId);
 
+  // React Flow marks a node as selected the instant a drag starts (not just on click), so this
+  // must only track *which* node/edge is selected, never force the properties panel open —
+  // otherwise a small drag to nudge a table pops the Table Designer open like a click.
+  // Opening the panel deliberately is handled by TableNode/RelationEdge's own onClick, which
+  // react-flow suppresses after a real drag.
   const handleSelectionChange = useCallback(
     ({ nodes, edges }: OnSelectionChangeParams) => {
       setSelectedTableIds(nodes.map((n) => n.id));
       if (nodes.length > 0) {
-        selectTable(nodes[0].id);
+        setActiveSelection(nodes[0].id, null);
       } else if (edges.length > 0) {
-        selectEdge(edges[0].id);
+        setActiveSelection(null, edges[0].id);
       } else {
-        selectTable(null);
-        selectEdge(null);
+        setActiveSelection(null, null);
       }
     },
-    [selectTable, selectEdge, setSelectedTableIds]
+    [setActiveSelection, setSelectedTableIds]
   );
 
   const handlePaneClick = useCallback(() => {
