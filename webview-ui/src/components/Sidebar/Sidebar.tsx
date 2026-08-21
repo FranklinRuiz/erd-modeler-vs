@@ -106,17 +106,6 @@ export function Sidebar() {
 
           <div className="w-6 border-t border-border my-1" />
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => addTable()}>
-                <Plus className="w-4 h-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="right">New table (Ctrl/Cmd + N)</TooltipContent>
-          </Tooltip>
-
-          <div className="w-6 border-t border-border my-1" />
-
           <div className="flex-1 w-full min-h-0 overflow-y-auto flex flex-col items-center gap-1.5 px-1.5">
             {tables.map((table) => (
               <TableChip
