@@ -6,4 +6,4 @@ webview-ui/node_modules/
 *.vsix
 .vscode-test/
 prueba/
-ui.png
+*.tsbuildinfo
