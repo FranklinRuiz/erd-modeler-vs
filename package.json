@@ -2,7 +2,7 @@
   "name": "schemacraft",
   "displayName": "SchemaCraft",
   "description": "Design and visualize SQL Server database schemas visually — drag-and-drop ER diagrams with instant T-SQL and DBML preview, right inside VS Code.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "franklin-ruiz",
   "license": "MIT",
   "icon": "icon.png",
