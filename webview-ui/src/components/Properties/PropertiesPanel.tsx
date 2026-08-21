@@ -104,8 +104,16 @@ export function PropertiesPanel() {
   const setOpen = useUIStore((s) => s.setPropertiesOpen);
   const selectedTableId = useUIStore((s) => s.selectedTableId);
   const selectedEdgeId = useUIStore((s) => s.selectedEdgeId);
+  const selectTable = useUIStore((s) => s.selectTable);
+  const selectEdge = useUIStore((s) => s.selectEdge);
 
   if (!isOpen) return null;
+
+  const handleClose = () => {
+    setOpen(false);
+    selectTable(null);
+    selectEdge(null);
+  };
 
   return (
     <aside className="w-[28rem] border-l border-border bg-card flex flex-col h-full animate-slide-in-right">
@@ -113,7 +121,7 @@ export function PropertiesPanel() {
         <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           {selectedTableId ? 'Table Designer' : selectedEdgeId ? 'Relation Designer' : 'Validation'}
         </h2>
-        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setOpen(false)}>
+        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleClose}>
           <X className="w-3.5 h-3.5" />
         </Button>
       </div>
@@ -133,18 +141,26 @@ function TableProperties({ tableId }: { tableId: string }) {
   );
   const updateTable = useDiagramStore((s) => s.updateTable);
   const addColumn = useDiagramStore((s) => s.addColumn);
+  const deleteTable = useDiagramStore((s) => s.deleteTable);
+  const selectTable = useUIStore((s) => s.selectTable);
 
   if (!node) return null;
   const { table } = node.data;
 
+  const handleDelete = () => {
+    deleteTable(tableId);
+    selectTable(null);
+    toast.success(`Table "${table.name}" deleted`, { description: 'Press Ctrl+Z to undo' });
+  };
+
   return (
     <div className="px-4 py-4 space-y-5">
       <Field label="Table name">
-        <Input value={table.name} onChange={(e) => updateTable(tableId, { name: e.target.value })} className="font-mono text-sm" placeholder="table_name" />
+        <Input value={table.name} onChange={(e) => updateTable(tableId, { name: e.target.value })} className="font-mono text-xs" placeholder="table_name" />
       </Field>
 
       <Field label="Schema">
-        <Input value={table.schema ?? ''} onChange={(e) => updateTable(tableId, { schema: e.target.value })} className="font-mono text-sm" placeholder="dbo" />
+        <Input value={table.schema ?? ''} onChange={(e) => updateTable(tableId, { schema: e.target.value })} className="font-mono text-xs" placeholder="dbo" />
       </Field>
 
       <Field label="Color / module">
@@ -172,7 +188,7 @@ function TableProperties({ tableId }: { tableId: string }) {
       </Field>
 
       <Field label="Comment" optional>
-        <Input value={table.comment ?? ''} onChange={(e) => updateTable(tableId, { comment: e.target.value })} placeholder="What this table represents..." className="text-sm" />
+        <Input value={table.comment ?? ''} onChange={(e) => updateTable(tableId, { comment: e.target.value })} placeholder="What this table represents..." className="text-xs" />
       </Field>
 
       <div className="flex items-center justify-between pt-2 border-t border-border">
@@ -195,6 +211,12 @@ function TableProperties({ tableId }: { tableId: string }) {
             <ColumnEditor key={col.id} column={col} tableId={tableId} index={idx} totalColumns={table.columns.length} />
           ))}
         </div>
+      </div>
+
+      <div className="pt-2 border-t border-border">
+        <Button variant="destructive" size="sm" onClick={handleDelete} className="w-full gap-2">
+          <Trash2 className="w-3.5 h-3.5" /> Delete Table
+        </Button>
       </div>
     </div>
   );

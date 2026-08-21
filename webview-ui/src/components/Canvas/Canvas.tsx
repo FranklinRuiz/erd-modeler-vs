@@ -254,6 +254,7 @@ export function Canvas() {
         onPaneClick={handlePaneClick}
         onNodeMouseEnter={handleNodeMouseEnter}
         onNodeMouseLeave={handleNodeMouseLeave}
+        selectNodesOnDrag={false}
         defaultViewport={DEFAULT_VIEWPORT}
         connectionLineType={ConnectionLineType.SmoothStep}
         connectionRadius={48}
@@ -288,7 +289,7 @@ export function Canvas() {
             return tn.data?.table?.color ?? 'hsl(var(--muted-foreground))';
           }}
           maskColor={theme === 'dark' ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.6)'}
-          style={{ backgroundColor: theme === 'dark' ? '#0f1115' : '#ffffff' }}
+          style={{ backgroundColor: theme === 'dark' ? '#0f1115' : '#ffffff', width: 160, height: 110 }}
         />
       </ReactFlow>
     </div>

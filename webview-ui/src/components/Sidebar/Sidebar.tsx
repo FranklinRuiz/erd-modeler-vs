@@ -248,13 +248,13 @@ export function Sidebar() {
             )}
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-1">
             {Object.entries(groupedTables).map(([schema, groupTables]) => (
               <div key={schema}>
-                <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <div className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                   {schema}
                 </div>
-                <div className="space-y-0.5">
+                <div className="space-y-0">
                   {groupTables.map((table) => {
                     const tableIssues = issues.filter((i) => i.tableId === table.id);
                     const hasError = tableIssues.some((i) => i.severity === 'error');
@@ -273,7 +273,7 @@ export function Sidebar() {
                           if (e.key === 'Enter' || e.key === ' ') { selectTable(table.id); setPropertiesOpen(true); }
                         }}
                         className={cn(
-                          'w-full text-left px-2 py-1.5 rounded-md flex flex-col gap-1 text-sm transition-colors group cursor-pointer',
+                          'w-full text-left px-2 py-1 rounded-md flex flex-col gap-0.5 text-sm transition-colors group cursor-pointer',
                           selectedTableId === table.id ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50'
                         )}
                       >
