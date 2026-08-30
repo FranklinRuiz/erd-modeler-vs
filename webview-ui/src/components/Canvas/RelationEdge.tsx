@@ -193,7 +193,7 @@ function RelationEdgeComponent({
               'px-2 py-0.5 rounded-full text-[10px] font-mono tracking-tight border transition-all cursor-pointer flex items-center gap-1 whitespace-nowrap',
               selected
                 ? 'bg-primary text-primary-foreground border-primary shadow-md'
-                : 'bg-card text-muted-foreground border-border hover:border-foreground/40 hover:text-foreground'
+                : 'bg-card/75 text-muted-foreground border-border hover:bg-card hover:border-foreground/40 hover:text-foreground'
             )}
             title={label}
           >
