@@ -5,6 +5,8 @@ import {
   BackgroundVariant,
   Controls,
   MiniMap,
+  ConnectionMode,
+  useStore,
   type Node,
   type NodeTypes,
   type EdgeTypes,
@@ -12,6 +14,7 @@ import {
   ConnectionLineType,
   useReactFlow,
 } from '@xyflow/react';
+import { getEdgePosition } from '@xyflow/system';
 import '@xyflow/react/dist/style.css';
 
 import { TableNode } from './TableNode';
@@ -22,6 +25,7 @@ import { DEFAULT_VIEWPORT } from '@/constants';
 import { useTheme } from '@/hooks/use-theme';
 import { getTableValidationLevel } from '@/utils/validation';
 import { registerFlowInstance } from '@/utils/flowInstance';
+import { computeEdgeLanes, dirVector, STEP_OFFSET, type EdgeGeometry } from '@/utils/edgeLanes';
 
 const nodeTypes: NodeTypes = { tableNode: TableNode };
 const edgeTypes: EdgeTypes = { relationEdge: RelationEdge };
@@ -33,6 +37,10 @@ export function Canvas() {
   useEffect(() => {
     registerFlowInstance({ fitView, getViewport, setViewport });
   }, [fitView, getViewport, setViewport]);
+
+  // React Flow's own internal node geometry (handle bounds included) — used to compute each
+  // relation's real, post-layout bend point for lane routing (see laneCenterXByEdge below).
+  const nodeLookup = useStore((s) => s.nodeLookup);
 
   const activeDiagram = useDiagramStore((s) => s.diagrams.find((d) => d.id === s.activeDiagramId));
   const onNodesChange = useDiagramStore((s) => s.onNodesChange);
@@ -202,6 +210,50 @@ export function Canvas() {
     return { fanByEdge, forwardByEdge };
   }, [rawEdges, nodePositionById, nodeCenterYById]);
 
+  // Relations between *different* table/column pairs can still land on the same default
+  // bend point (e.g. several parents feeding one child column) and draw stacked on top of
+  // each other over their shared Y range — a corridor collision, not a shared-anchor one, so
+  // the fan-out above doesn't catch it. Using React Flow's own resolved handle geometry (the
+  // same inputs it uses to render each edge) mirrors the library's default bend-point math
+  // to find those collisions, then spreads each group into its own lane (see edgeLanes.ts).
+  const laneCenterXByEdge = useMemo(() => {
+    const geometries: EdgeGeometry[] = [];
+    for (const edge of rawEdges) {
+      const forward = fanAssignment.forwardByEdge.get(edge.id) ?? true;
+      const sourceColumnId = edge.data?.sourceColumnId;
+      const targetColumnId = edge.data?.targetColumnId;
+      if (!sourceColumnId || !targetColumnId) continue;
+
+      const sourceNode = nodeLookup.get(edge.source);
+      const targetNode = nodeLookup.get(edge.target);
+      if (!sourceNode || !targetNode) continue;
+
+      const position = getEdgePosition({
+        id: edge.id,
+        sourceNode,
+        sourceHandle: `${sourceColumnId}-source-${forward ? 'right' : 'left'}`,
+        targetNode,
+        targetHandle: `${targetColumnId}-target-${forward ? 'left' : 'right'}`,
+        connectionMode: ConnectionMode.Strict,
+      });
+      if (!position) continue;
+
+      const { sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition } = position;
+      const sDir = dirVector(sourcePosition);
+      const tDir = dirVector(targetPosition);
+      const sourceGappedX = sourceX + sDir.x * STEP_OFFSET;
+      const targetGappedX = targetX + tDir.x * STEP_OFFSET;
+
+      geometries.push({
+        id: edge.id,
+        centerX: sourceGappedX + (targetGappedX - sourceGappedX) * 0.5,
+        yMin: Math.min(sourceY, targetY),
+        yMax: Math.max(sourceY, targetY),
+      });
+    }
+    return computeEdgeLanes(geometries);
+  }, [rawEdges, fanAssignment, nodeLookup]);
+
   const edges = useMemo((): RelationEdgeType[] => {
     return rawEdges.map((edge) => {
       // Direction-aware handle side: exit/enter whichever side actually faces the other
@@ -232,11 +284,12 @@ export function Canvas() {
           sourceFanCount: fan?.sourceCount ?? 1,
           targetFanIndex: fan?.targetIndex ?? 0,
           targetFanCount: fan?.targetCount ?? 1,
+          laneCenterX: laneCenterXByEdge.get(edge.id),
           sourceOptional,
         } as RelationEdgeType['data'],
       };
     });
-  }, [rawEdges, connectedEdgeIds, focusTableId, fanAssignment, columnNullableById]);
+  }, [rawEdges, connectedEdgeIds, focusTableId, fanAssignment, laneCenterXByEdge, columnNullableById]);
 
   const settings = activeDiagram?.settings;
 

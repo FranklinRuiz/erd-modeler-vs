@@ -9,6 +9,7 @@ import { X, Link2 } from 'lucide-react';
 import type { RelationEdge as RelationEdgeType, RelationType } from '@/types';
 import { useDiagramStore, useUIStore } from '@/store';
 import { cn } from '@/lib/utils';
+import { dirVector } from '@/utils/edgeLanes';
 
 /** How far straight out from the shared anchor before a fanned line starts nudging sideways. */
 const FAN_LEAD = 12;
@@ -18,19 +19,6 @@ const FAN_SPACING = 6;
 function fanOffset(index: number, count: number): number {
   if (count <= 1) return 0;
   return (index - (count - 1) / 2) * FAN_SPACING;
-}
-
-function dirVector(position: string): { x: number; y: number } {
-  switch (position) {
-    case 'left':
-      return { x: -1, y: 0 };
-    case 'right':
-      return { x: 1, y: 0 };
-    case 'top':
-      return { x: 0, y: -1 };
-    default:
-      return { x: 0, y: 1 };
-  }
 }
 
 function RelationEdgeComponent({
@@ -66,6 +54,11 @@ function RelationEdgeComponent({
   const effTargetX = targetLead.x + (tDir.x === 0 ? tOffset : 0);
   const effTargetY = targetLead.y + (tDir.x !== 0 ? tOffset : 0);
 
+  // Relations that don't share an anchor can still land on the same default bend point —
+  // e.g. several parents feeding one child column — and draw stacked on top of each other
+  // over their shared Y range. Canvas pre-computes a lane offset (laneCenterX) for any
+  // relation caught in that situation; passing it as centerX spreads the bend into its own
+  // parallel lane instead of leaving the library to pick the same midpoint for all of them.
   const [smoothPath, labelX, labelY] = getSmoothStepPath({
     sourceX: effSourceX,
     sourceY: effSourceY,
@@ -74,6 +67,7 @@ function RelationEdgeComponent({
     targetY: effTargetY,
     targetPosition,
     borderRadius: 12,
+    ...(data?.laneCenterX !== undefined && { centerX: data.laneCenterX }),
   });
 
   // Chain: true anchor -> straight lead -> fan lane, then the library's own step path (which

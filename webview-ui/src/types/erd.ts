@@ -133,6 +133,11 @@ export interface RelationData extends Record<string, unknown> {
   sourceFanCount?: number;
   targetFanIndex?: number;
   targetFanCount?: number;
+  /** Explicit bend-point X for relations whose default orthogonal path would otherwise land
+   *  on the same corridor as another relation over an overlapping Y range (see
+   *  computeEdgeLanes in utils/edgeLanes). Undefined for the common, non-colliding case —
+   *  those keep the library's own default bend point untouched. */
+  laneCenterX?: number;
   /** Whether the "one" mark near the parent (source) should show as optional (0 or 1, drawn
    *  with a circle) rather than mandatory (exactly 1) — reflects whether the child's actual FK
    *  column allows NULL. */
