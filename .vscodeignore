@@ -8,6 +8,7 @@ webview-ui/public/**
 webview-ui/index.html
 publicar-extension.txt
 DEVELOPMENT.md
+images/**
 webview-ui/node_modules/**
 webview-ui/*.config.*
 webview-ui/tsconfig*.json

@@ -7,6 +7,7 @@ import {
   MiniMap,
   ConnectionMode,
   useStore,
+  useNodesInitialized,
   type Node,
   type NodeTypes,
   type EdgeTypes,
@@ -41,6 +42,12 @@ export function Canvas() {
   // React Flow's own internal node geometry (handle bounds included) — used to compute each
   // relation's real, post-layout bend point for lane routing (see laneCenterXByEdge below).
   const nodeLookup = useStore((s) => s.nodeLookup);
+  // On a fresh load, nodeLookup's handle bounds fill in asynchronously after mount, but
+  // mutating an existing node's bounds doesn't always replace the Map reference — so a
+  // selector on nodeLookup alone can miss that update and leave relations laid out with
+  // their un-measured (all stacked on one bend point) geometry. This hook flips true once
+  // every node has actually been measured, forcing the lane computation below to re-run.
+  const nodesInitialized = useNodesInitialized();
 
   const activeDiagram = useDiagramStore((s) => s.diagrams.find((d) => d.id === s.activeDiagramId));
   const onNodesChange = useDiagramStore((s) => s.onNodesChange);
@@ -252,7 +259,7 @@ export function Canvas() {
       });
     }
     return computeEdgeLanes(geometries);
-  }, [rawEdges, fanAssignment, nodeLookup]);
+  }, [rawEdges, fanAssignment, nodeLookup, nodesInitialized]);
 
   const edges = useMemo((): RelationEdgeType[] => {
     return rawEdges.map((edge) => {

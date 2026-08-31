@@ -4,6 +4,8 @@
 
 SchemaCraft brings a full visual ER (Entity-Relationship) diagram editor straight into your editor. Model tables, define relationships, and preview the generated SQL — all next to your code, with no external tools, no browser tabs, no context switching.
 
+![A real-world schema modeled as an ER diagram inside VS Code, with tables, crow's-foot relations, and live model validation](images/screenshot.png)
+
 ## ✨ Features
 
 - 🎨 **Visual schema design** — build your database model on an interactive drag-and-drop canvas: tables, columns, keys, and relationships
