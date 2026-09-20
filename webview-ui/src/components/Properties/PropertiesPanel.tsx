@@ -230,12 +230,12 @@ function TableProperties({ tableId }: { tableId: string }) {
       </div>
 
       <div className="rounded-md border border-border overflow-hidden">
-        <div className="flex items-center gap-2 pl-2 pr-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground bg-muted/50 border-b border-border/50">
+        <div className="flex items-center gap-1.5 pl-2 pr-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground bg-muted/50 border-b border-border/50">
           <div className="w-3 flex-shrink-0" />
           <span className="flex-1 min-w-0">Name</span>
           <span className="w-24 flex-shrink-0">Type</span>
-          <span className="w-16 flex-shrink-0 text-right">Flags</span>
-          <div className="w-5 flex-shrink-0" />
+          <span className="w-14 flex-shrink-0 text-right">Flags</span>
+          <div className="w-4 flex-shrink-0" />
         </div>
         <div className="divide-y divide-border/50">
           {table.columns.map((col, idx) => (
@@ -255,9 +255,47 @@ function TableProperties({ tableId }: { tableId: string }) {
 
 function ColumnEditor({ column, tableId, index, totalColumns }: { column: Column; tableId: string; index: number; totalColumns: number }) {
   const [expanded, setExpanded] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragAllowedRef = useRef(false);
   const updateColumn = useDiagramStore((s) => s.updateColumn);
   const deleteColumn = useDiagramStore((s) => s.deleteColumn);
   const reorderColumns = useDiagramStore((s) => s.reorderColumns);
+
+  // Dragging is only allowed when initiated from the grip handle (dragAllowedRef),
+  // so text selection / clicks inside inputs and selects keep working normally.
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
+    if (!dragAllowedRef.current) {
+      e.preventDefault();
+      return;
+    }
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(index));
+    setIsDragging(true);
+  };
+
+  const handleDragEnd = () => {
+    dragAllowedRef.current = false;
+    setIsDragging(false);
+    setIsDragOver(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (!isDragOver) setIsDragOver(true);
+  };
+
+  const handleDragLeave = () => setIsDragOver(false);
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const sourceIndex = Number(e.dataTransfer.getData('text/plain'));
+    if (!Number.isNaN(sourceIndex) && sourceIndex !== index) {
+      reorderColumns(tableId, sourceIndex, index);
+    }
+  };
 
   const { base, param } = parseTypeParam(column.type);
   const showLongitud = PARAM_TYPES.has(base);
@@ -286,19 +324,36 @@ function ColumnEditor({ column, tableId, index, totalColumns }: { column: Column
   };
 
   return (
-    <div className={cn('bg-background/50 transition-all', expanded && 'bg-accent/20')}>
-      <div className="flex items-center gap-2 pl-2 pr-3 py-1.5">
-        <GripVertical className="w-3 h-3 text-muted-foreground/40 flex-shrink-0" />
+    <div
+      className={cn(
+        'bg-background/50 transition-all',
+        expanded && 'bg-accent/20',
+        isDragging && 'opacity-40',
+        isDragOver && 'border-t-2 border-primary',
+      )}
+      draggable
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      <div className="flex items-center gap-1.5 pl-2 pr-2 py-1">
+        <GripVertical
+          className="w-3 h-3 text-muted-foreground/40 flex-shrink-0 cursor-grab active:cursor-grabbing"
+          onMouseDown={() => { dragAllowedRef.current = true; }}
+          onMouseUp={() => { dragAllowedRef.current = false; }}
+        />
 
         <Input
           value={column.name}
           onChange={(e) => updateColumn(tableId, column.id, { name: e.target.value })}
-          className="h-7 px-1.5 text-xs font-mono border-0 bg-transparent focus-visible:bg-background flex-1 min-w-0"
+          className="h-6 px-1.5 text-xs font-mono border-0 bg-transparent focus-visible:bg-background flex-1 min-w-0"
           placeholder="column_name"
         />
 
         <Select value={BASE_TYPES.includes(base) ? base : 'VARCHAR'} onValueChange={handleTypeChange}>
-          <SelectTrigger title={base} className="h-7 w-24 flex-shrink-0 px-1.5 text-xs font-mono">
+          <SelectTrigger title={base} className="h-6 w-24 flex-shrink-0 px-1.5 text-xs font-mono">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -314,21 +369,21 @@ function ColumnEditor({ column, tableId, index, totalColumns }: { column: Column
           <ToggleIcon active={column.isUnique} onClick={() => updateColumn(tableId, column.id, { isUnique: !column.isUnique })} color="hsl(var(--erd-unique))" icon={<Hash className="w-3 h-3" />} title="Unique" />
         </div>
 
-        <button onClick={() => setExpanded(!expanded)} className="w-5 flex-shrink-0 text-muted-foreground hover:text-foreground flex items-center justify-center">
+        <button onClick={() => setExpanded(!expanded)} className="w-4 flex-shrink-0 text-muted-foreground hover:text-foreground flex items-center justify-center">
           {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
         </button>
       </div>
 
       {expanded && (
-        <div className="px-2 pb-2 space-y-2 border-t border-border/50 pt-2">
-          <div className={cn('grid gap-2', canAutoIncrement ? 'grid-cols-2' : 'grid-cols-1')}>
+        <div className="px-2 pb-1.5 space-y-1.5 border-t border-border/50 pt-1.5">
+          <div className={cn('grid gap-1.5', canAutoIncrement ? 'grid-cols-2' : 'grid-cols-1')}>
             <SwitchRow compact label="Not Null" checked={!column.isNullable} onChange={(v) => updateColumn(tableId, column.id, { isNullable: !v })} disabled={column.isPrimaryKey} />
             {canAutoIncrement && (
               <SwitchRow compact label="Auto Increment" checked={column.isAutoIncrement} onChange={(v) => updateColumn(tableId, column.id, { isAutoIncrement: v })} />
             )}
           </div>
           {/* Short-value fields share a row; Comment stays full-width since it holds free text. */}
-          <div className={cn('grid gap-2', showLongitud ? 'grid-cols-2' : 'grid-cols-1')}>
+          <div className={cn('grid gap-1.5', showLongitud ? 'grid-cols-2' : 'grid-cols-1')}>
             {showLongitud && (
               <Field label="Length / precision">
                 <Input
@@ -336,17 +391,17 @@ function ColumnEditor({ column, tableId, index, totalColumns }: { column: Column
                   onChange={(e) => setLocalParam(e.target.value)}
                   onBlur={(e) => commitLongitud(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') commitLongitud(localParam); }}
-                  className="h-7 text-xs font-mono"
+                  className="h-6 text-xs font-mono"
                   placeholder="e.g. 50 or 10,2"
                 />
               </Field>
             )}
             <Field label="Default value" optional>
-              <Input value={column.defaultValue ?? ''} onChange={(e) => updateColumn(tableId, column.id, { defaultValue: e.target.value })} className="h-7 text-xs font-mono" placeholder="NULL" />
+              <Input value={column.defaultValue ?? ''} onChange={(e) => updateColumn(tableId, column.id, { defaultValue: e.target.value })} className="h-6 text-xs font-mono" placeholder="NULL" />
             </Field>
           </div>
           <Field label="Comment" optional>
-            <Input value={column.comment ?? ''} onChange={(e) => updateColumn(tableId, column.id, { comment: e.target.value })} className="h-7 text-xs" placeholder="Description..." />
+            <Input value={column.comment ?? ''} onChange={(e) => updateColumn(tableId, column.id, { comment: e.target.value })} className="h-6 text-xs" placeholder="Description..." />
           </Field>
           {column.references && (
             <div className="rounded-md border border-sky-500/30 bg-sky-500/10 px-2 py-1.5 text-[11px] text-sky-700 dark:text-sky-300">
@@ -506,7 +561,7 @@ function Field({ label, children, optional }: { label: string; children: React.R
 
 function ToggleIcon({ active, onClick, color, icon, title }: { active: boolean; onClick: () => void; color: string; icon: React.ReactNode; title: string }) {
   return (
-    <button onClick={onClick} title={title} className={cn('w-5 h-5 rounded flex items-center justify-center transition-all', active ? 'bg-foreground/10' : 'opacity-30 hover:opacity-100')} style={active ? { color } : undefined}>
+    <button onClick={onClick} title={title} className={cn('w-4 h-4 rounded flex items-center justify-center transition-all', active ? 'bg-foreground/10' : 'opacity-30 hover:opacity-100')} style={active ? { color } : undefined}>
       {icon}
     </button>
   );

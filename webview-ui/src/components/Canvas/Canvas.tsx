@@ -45,8 +45,20 @@ export function Canvas() {
   // On a fresh load, nodeLookup's handle bounds fill in asynchronously after mount, but
   // mutating an existing node's bounds doesn't always replace the Map reference — so a
   // selector on nodeLookup alone can miss that update and leave relations laid out with
-  // their un-measured (all stacked on one bend point) geometry. This hook flips true once
-  // every node has actually been measured, forcing the lane computation below to re-run.
+  // their un-measured (all stacked on one bend point) geometry. useNodesInitialized alone
+  // isn't enough either: reloaded diagrams persist each node's last-known `measured` size
+  // (it round-trips through onNodesChange into our store), so React Flow considers nodes
+  // "initialized" from the very first render — before the ResizeObserver pass that actually
+  // fills in handleBounds has run. Counting how many nodes currently have handleBounds set
+  // gives a primitive that changes the moment that real measurement lands, forcing the lane
+  // computation below to re-run even when nodesInitialized was already (prematurely) true.
+  const measuredHandleCount = useStore((s) => {
+    let count = 0;
+    for (const node of s.nodeLookup.values()) {
+      if (node.internals.handleBounds) count++;
+    }
+    return count;
+  });
   const nodesInitialized = useNodesInitialized();
 
   const activeDiagram = useDiagramStore((s) => s.diagrams.find((d) => d.id === s.activeDiagramId));
@@ -259,7 +271,7 @@ export function Canvas() {
       });
     }
     return computeEdgeLanes(geometries);
-  }, [rawEdges, fanAssignment, nodeLookup, nodesInitialized]);
+  }, [rawEdges, fanAssignment, nodeLookup, nodesInitialized, measuredHandleCount]);
 
   const edges = useMemo((): RelationEdgeType[] => {
     return rawEdges.map((edge) => {
