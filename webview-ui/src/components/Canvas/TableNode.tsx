@@ -58,10 +58,10 @@ function TableNodeComponent({ data, selected, id }: NodeProps<TableNodeType>) {
       <div
         onClick={() => selectTable(id)}
         className={cn(
-          'rounded-lg overflow-hidden bg-card text-card-foreground shadow-sm border transition-all',
+          'rounded-lg overflow-hidden bg-card text-card-foreground shadow-sm dark:shadow-lg dark:shadow-black/40 border transition-all',
           selected
-            ? 'border-primary/50 shadow-md ring-1 ring-primary/10'
-            : 'border-border hover:border-foreground/30 hover:shadow-md',
+            ? 'border-primary/50 shadow-md dark:shadow-black/50 ring-1 ring-primary/10'
+            : 'border-border hover:border-foreground/30 hover:shadow-md dark:hover:shadow-black/50',
           validationLevel === 'error' && 'ring-2 ring-destructive/40 border-destructive/70',
           validationLevel === 'warning' && 'ring-2 ring-amber-400/40 border-amber-400/70',
         )}
