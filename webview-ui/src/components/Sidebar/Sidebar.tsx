@@ -94,17 +94,17 @@ export function Sidebar() {
 
   if (isCollapsed) {
     return (
-      <aside className="w-14 border-r border-border bg-card flex flex-col items-center h-full">
-        {/* h-12 matches the toolbar so the border line runs flush across both */}
-        <div className="h-12 w-full border-b border-border flex items-center justify-center gap-1 flex-shrink-0">
-          <AppLogo className="h-7 w-7 rounded-md flex-shrink-0" />
+      <aside className="w-12 border-r border-border bg-card flex flex-col items-center h-full">
+        {/* h-10 matches the toolbar so the border line runs flush across both */}
+        <div className="h-10 w-full border-b border-border flex items-center justify-center gap-1 flex-shrink-0">
+          <AppLogo className="h-6 w-6 rounded-md flex-shrink-0" />
         </div>
 
-        <div className="flex-1 w-full min-h-0 flex flex-col items-center gap-1.5 py-3">
+        <div className="flex-1 w-full min-h-0 flex flex-col items-center gap-1 py-2">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-10 w-10" onClick={toggleSidebar}>
-                <PanelLeftOpen className="w-5 h-5" />
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={toggleSidebar}>
+                <PanelLeftOpen className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent side="right">Expand sidebar</TooltipContent>
@@ -112,7 +112,7 @@ export function Sidebar() {
 
           <div className="w-6 border-t border-border my-1" />
 
-          <div className="flex-1 w-full min-h-0 overflow-y-auto flex flex-col items-center gap-1.5 px-1.5 py-1">
+          <div className="flex-1 w-full min-h-0 overflow-y-auto flex flex-col items-center gap-1 px-1 py-1">
             {tables.map((table) => (
               <TableChip
                 key={table.id}
@@ -129,7 +129,7 @@ export function Sidebar() {
             <TooltipTrigger asChild>
               <button
                 onClick={() => { selectTable(null); setPropertiesOpen(true); }}
-                className="relative w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 hover:bg-accent transition-colors"
+                className="relative w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 hover:bg-accent transition-colors"
               >
                 {issues.length === 0 ? (
                   <CheckCircle2 className="w-4 h-4 text-emerald-500" />
@@ -149,17 +149,17 @@ export function Sidebar() {
 
   return (
     <aside className="w-72 border-r border-border bg-card flex flex-col h-full">
-      {/* App header — h-12 matches the toolbar so the border line runs flush across both */}
-      <div className="h-12 px-2 border-b border-border flex items-center gap-2.5 flex-shrink-0">
-        <AppLogo className="h-7 w-7 rounded-md flex-shrink-0" />
+      {/* App header — h-10 matches the toolbar so the border line runs flush across both */}
+      <div className="h-10 px-2 border-b border-border flex items-center gap-2.5 flex-shrink-0">
+        <AppLogo className="h-6 w-6 rounded-md flex-shrink-0" />
         <div className="min-w-0 flex-1 leading-tight">
           <h1 className="font-semibold text-sm tracking-tight truncate">{APP_NAME}</h1>
           <p className="text-[10px] text-muted-foreground truncate">{APP_TAGLINE}</p>
         </div>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-10 w-10 flex-shrink-0" onClick={toggleSidebar}>
-              <PanelLeftClose className="w-5 h-5" />
+            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={toggleSidebar}>
+              <PanelLeftClose className="w-4 h-4" />
             </Button>
           </TooltipTrigger>
           <TooltipContent side="right">Collapse sidebar</TooltipContent>
@@ -174,7 +174,7 @@ export function Sidebar() {
             onChange={(e) => setEditValue(e.target.value)}
             onBlur={handleSaveRename}
             onKeyDown={(e) => e.key === 'Enter' && handleSaveRename()}
-            className="h-7 text-xs flex-1"
+            className="h-6 text-xs flex-1"
             autoFocus
           />
         ) : (
@@ -213,7 +213,7 @@ export function Sidebar() {
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Escape' && search) { e.stopPropagation(); setSearch(''); } }}
             placeholder="Search tables, columns..."
-            className="h-7 pl-8 pr-7 text-xs"
+            className="h-6 pl-8 pr-7 text-xs"
           />
           {search && (
             <button
@@ -378,8 +378,8 @@ function TableChip({
         <button
           onClick={onSelect}
           className={cn(
-            'relative w-8 h-8 rounded-md flex items-center justify-center text-[10px] font-mono font-semibold uppercase flex-shrink-0 transition-all',
-            isSelected ? 'ring-2 ring-primary' : 'ring-1 ring-transparent hover:ring-border'
+            'relative w-7 h-7 rounded-md flex items-center justify-center text-[10px] font-mono font-semibold uppercase flex-shrink-0 transition-all',
+            isSelected ? 'ring-1 ring-primary/70' : 'ring-1 ring-transparent hover:ring-border'
           )}
           style={{ backgroundColor: `${table.color ?? '#94a3b8'}26`, color: table.color ?? '#94a3b8' }}
         >
@@ -387,7 +387,7 @@ function TableChip({
           {(hasError || hasWarning) && (
             <span
               className={cn(
-                'absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-card',
+                'absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full border border-card',
                 hasError ? 'bg-destructive' : 'bg-amber-500'
               )}
             />

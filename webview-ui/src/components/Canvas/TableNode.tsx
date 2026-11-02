@@ -86,12 +86,12 @@ function TableNodeComponent({ data, selected, id }: NodeProps<TableNodeType>) {
                   if (e.key === 'Escape') { setNameValue(table.name); setEditingName(false); }
                 }}
                 onClick={(e) => e.stopPropagation()}
-                className="nodrag w-full font-mono font-semibold text-sm tracking-tight bg-background border border-primary/50 rounded px-1 -mx-1 outline-none"
+                className="nodrag w-full font-sans font-semibold text-[15px] bg-background border border-primary/50 rounded px-1 -mx-1 outline-none"
               />
             ) : (
               <h3
                 onDoubleClick={(e) => { e.stopPropagation(); setEditingName(true); }}
-                className="font-mono font-semibold text-sm tracking-tight truncate cursor-text"
+                className="font-sans font-semibold text-[15px] truncate cursor-text"
                 title="Double-click to rename"
               >
                 <span className="font-normal text-muted-foreground">{table.schema ?? 'dbo'}.</span>{table.name}
@@ -109,7 +109,7 @@ function TableNodeComponent({ data, selected, id }: NodeProps<TableNodeType>) {
             >
               <Wand2 className="w-3 h-3" />
             </button>
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-mono">
+            <span className="text-[11px] text-muted-foreground font-mono">
               {table.columns.length}
             </span>
           </div>
@@ -147,7 +147,7 @@ function ColumnRow({ column, tableId, compact }: { column: Column; tableId: stri
   };
 
   return (
-    <div className="relative grid grid-cols-[18px_1fr_auto_86px] items-center gap-1.5 px-3 py-1.5 text-xs hover:bg-accent/40 transition-colors group/col">
+    <div className="relative grid grid-cols-[18px_1fr_auto_86px] items-center gap-2 px-3 py-[5px] text-[13px] hover:bg-accent/40 transition-colors group/col">
 
       {/* Source handle */}
       <Handle
@@ -200,14 +200,14 @@ function ColumnRow({ column, tableId, compact }: { column: Column; tableId: stri
             if (e.key === 'Escape') { setValue(column.name); setEditing(false); }
           }}
           onClick={(e) => e.stopPropagation()}
-          className="nodrag w-full font-mono text-xs bg-background border border-primary/40 rounded px-1 -mx-1 outline-none"
+          className="nodrag w-full font-sans text-[13px] bg-background border border-primary/40 rounded px-1 -mx-1 outline-none"
         />
       ) : (
         <span
           onDoubleClick={(e) => { e.stopPropagation(); setEditing(true); }}
           title="Double-click to rename"
           className={cn(
-            'font-mono truncate text-foreground cursor-text',
+            'font-sans truncate text-foreground cursor-text',
             column.isPrimaryKey && 'font-semibold',
           )}
         >
@@ -216,12 +216,12 @@ function ColumnRow({ column, tableId, compact }: { column: Column; tableId: stri
       )}
 
       {/* Data type — read only, hidden when zoomed far out (unreadable + adds noise) */}
-      <span className={cn('font-mono text-[10px] text-foreground/85 truncate', compact && 'invisible')}>
+      <span className={cn('font-mono text-[11px] lowercase text-muted-foreground truncate', compact && 'invisible')}>
         {column.type}
       </span>
 
       {/* Constraint badges */}
-      <div className={cn('flex items-center justify-end gap-1 text-[9px] font-mono uppercase tracking-wider', compact && 'invisible')}>
+      <div className={cn('flex items-center justify-end gap-1 text-[10px] font-mono font-medium uppercase', compact && 'invisible')}>
         {column.isPrimaryKey && <Badge tone="pk">PK</Badge>}
         {!column.isNullable && <Badge tone="nn">NN</Badge>}
         {column.isAutoIncrement && <Badge tone="ai">AI</Badge>}
@@ -264,7 +264,7 @@ function Badge({ children, tone }: { children: React.ReactNode; tone: 'pk' | 'fk
     ai: 'bg-violet-500/15 text-violet-600 dark:text-violet-400',
     uk: 'bg-pink-500/15 text-pink-600 dark:text-pink-400',
   }[tone];
-  return <span className={cn('rounded px-1 py-0.5', className)}>{children}</span>;
+  return <span className={cn('rounded px-1 leading-4', className)}>{children}</span>;
 }
 
 export const TableNode = memo(TableNodeComponent);

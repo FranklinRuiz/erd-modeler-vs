@@ -55,7 +55,7 @@ export function Toolbar() {
   const codePreview = codeTab === 'sql' ? sqlPreview : dbmlPreview;
 
   return (
-    <header className="h-12 border-b border-border bg-card/60 backdrop-blur-sm flex items-center justify-between px-3 flex-shrink-0">
+    <header className="h-10 border-b border-border bg-card/60 backdrop-blur-sm flex items-center justify-between px-2 flex-shrink-0">
       {/* Left actions: create -> edit history -> arrange -> generate/export */}
       <div className="flex items-center gap-1">
         <Tooltip>
@@ -64,7 +64,7 @@ export function Toolbar() {
               variant="ghost"
               size="sm"
               onClick={() => addTable()}
-              className="h-8 gap-1.5"
+              className="h-6 gap-1.5 px-2.5"
             >
               <Plus className="w-3.5 h-3.5" />
               <span className="text-xs">New Table</span>
@@ -73,7 +73,7 @@ export function Toolbar() {
           <TooltipContent>Create new table (⌘N)</TooltipContent>
         </Tooltip>
 
-        <div className="w-px h-5 bg-border mx-1" />
+        <div className="w-px h-4 bg-border mx-1" />
 
         <Tooltip>
           <TooltipTrigger asChild>
@@ -86,7 +86,7 @@ export function Toolbar() {
                   getFlowInstance()?.fitView({ padding: 0.04, maxZoom: 2, duration: 400 });
                 }, 50);
               }}
-              className="h-8 gap-1.5"
+              className="h-6 gap-1.5 px-2.5"
             >
               <LayoutGrid className="w-3.5 h-3.5" />
               <span className="text-xs">Auto layout</span>
@@ -101,7 +101,7 @@ export function Toolbar() {
               variant="ghost"
               size="sm"
               onClick={() => getFlowInstance()?.fitView({ padding: 0.04, maxZoom: 2, duration: 400 })}
-              className="h-8 gap-1.5"
+              className="h-6 gap-1.5 px-2.5"
             >
               <Maximize2 className="w-3.5 h-3.5" />
               <span className="text-xs">Fit view</span>
@@ -110,7 +110,7 @@ export function Toolbar() {
           <TooltipContent>Zoom to fit all tables — keeps their current positions</TooltipContent>
         </Tooltip>
 
-        <div className="w-px h-5 bg-border mx-1" />
+        <div className="w-px h-4 bg-border mx-1" />
 
         <Tooltip>
           <TooltipTrigger asChild>
@@ -118,7 +118,7 @@ export function Toolbar() {
               variant="ghost"
               size="sm"
               onClick={handleViewSQL}
-              className="h-8 gap-1.5"
+              className="h-6 gap-1.5 px-2.5"
             >
               <FileCode className="w-3.5 h-3.5" />
               <span className="text-xs">SQL Preview</span>
@@ -133,7 +133,7 @@ export function Toolbar() {
               variant="ghost"
               size="sm"
               onClick={handleViewDBML}
-              className="h-8 gap-1.5"
+              className="h-6 gap-1.5 px-2.5"
             >
               <Braces className="w-3.5 h-3.5" />
               <span className="text-xs">DBML</span>
@@ -149,14 +149,14 @@ export function Toolbar() {
 
         {!isVSCode() && (
           <>
-            <div className="w-px h-5 bg-border mx-1" />
+            <div className="w-px h-4 bg-border mx-1" />
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={toggleTheme}
-                  className="h-8 w-8"
+                  className="h-6 w-6"
                 >
                   {theme === 'dark' ? (
                     <Sun className="w-3.5 h-3.5" />
@@ -197,7 +197,9 @@ export function Toolbar() {
             </button>
           </div>
           <pre className="flex-1 overflow-auto bg-muted rounded-lg p-4 text-xs font-mono leading-relaxed">
-            <code>{codePreview}</code>
+            {/* VS Code's webview default styles give every <code> its own background, padding
+                and font, which striped each line of the preview; reset them to inherit the <pre>. */}
+            <code className="bg-transparent p-0 rounded-none font-mono [color:inherit]">{codePreview}</code>
           </pre>
           <div className="flex justify-end gap-2">
             <Button

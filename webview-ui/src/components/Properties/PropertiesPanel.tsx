@@ -152,7 +152,7 @@ export function PropertiesPanel() {
         <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           {viewTableId ? 'Table Designer' : viewEdgeId ? 'Relation Designer' : 'Validation'}
         </h2>
-        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleClose}>
+        <Button variant="ghost" size="icon" className="h-[22px] w-[22px]" onClick={handleClose}>
           <X className="w-3.5 h-3.5" />
         </Button>
       </div>
@@ -224,7 +224,7 @@ function TableProperties({ tableId }: { tableId: string }) {
 
       <div className="flex items-center justify-between pt-2 border-t border-border">
         <h3 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Columns ({table.columns.length})</h3>
-        <Button size="sm" variant="ghost" onClick={() => addColumn(tableId)} className="h-6 text-xs gap-1 px-2">
+        <Button size="sm" variant="ghost" onClick={() => addColumn(tableId)} className="h-[22px] text-xs gap-1 px-2">
           <Plus className="w-3 h-3" /> Add
         </Button>
       </div>
@@ -509,12 +509,14 @@ function EdgeProperties({ edgeId }: { edgeId: string }) {
         <SwitchRow label="Identifying relation" checked={Boolean(edge.data.isIdentifying)} onChange={(v) => updateRelation(edgeId, { isIdentifying: v })} />
       </div>
 
-      <Button variant="outline" size="sm" onClick={() => convertManyToManyRelation(edgeId)} className="w-full gap-2">
-        <Table2 className="w-3.5 h-3.5" /> Generate junction table
-      </Button>
-      <Button variant="destructive" size="sm" onClick={() => { deleteEdge(edgeId); selectEdge(null); }} className="w-full gap-2">
-        <Trash2 className="w-3.5 h-3.5" /> Delete Relation
-      </Button>
+      <div className="space-y-2">
+        <Button variant="outline" size="sm" onClick={() => convertManyToManyRelation(edgeId)} className="w-full gap-2">
+          <Table2 className="w-3.5 h-3.5" /> Generate junction table
+        </Button>
+        <Button variant="destructive" size="sm" onClick={() => { deleteEdge(edgeId); selectEdge(null); }} className="w-full gap-2">
+          <Trash2 className="w-3.5 h-3.5" /> Delete Relation
+        </Button>
+      </div>
     </div>
   );
 }
