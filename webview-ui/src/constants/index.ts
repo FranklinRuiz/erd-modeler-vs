@@ -1,6 +1,5 @@
 export const APP_NAME = 'astoDB';
 export const APP_TAGLINE = 'Visual SQL Server Modeler';
-export const APP_VERSION = '1.0.0';
 
 export const STORAGE_KEY = 'astodb-erd-workspace';
 export const THEME_KEY = 'astodb-theme';
@@ -22,4 +21,3 @@ export const DEFAULT_TABLE_COLOR = '#94a3b8';
 
 export const DEFAULT_VIEWPORT = { x: 0, y: 0, zoom: 1 };
 
-export const NODE_DEFAULT_WIDTH = 280;

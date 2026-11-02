@@ -15,7 +15,6 @@ import type {
   Table,
   Column,
   RelationType,
-  ReferentialAction,
   ValidationIssue,
 } from '@/types';
 import {
@@ -28,7 +27,7 @@ import {
   createJunctionTable,
 } from '@/utils/factories';
 import { validateDiagram } from '@/utils/validation';
-import { STORAGE_KEY, NODE_DEFAULT_WIDTH } from '@/constants';
+import { STORAGE_KEY } from '@/constants';
 
 interface HistorySnapshot {
   diagrams: Diagram[];
@@ -252,7 +251,7 @@ export const useDiagramStore = create<DiagramStore>()(
           set((state) => ({
             ...pushHistory(state, null),
             ...updateActive(state, (d) => {
-              const table = createTable(name ?? `table_${d.nodes.length + 1}`, d.nodes.length);
+              const table = createTable(name ?? `table_${d.nodes.length + 1}`);
               const node = createTableNode(table, snap(position ?? randomPosition(), d.settings.gridSize));
               return { ...d, nodes: [...d.nodes, node] };
             }),
@@ -290,7 +289,7 @@ export const useDiagramStore = create<DiagramStore>()(
             ...updateActive(state, (d) => {
               const node = d.nodes.find((n) => n.id === tableId);
               if (!node) return d;
-              const newTable = createTable(`${node.data.table.name}_copy`, d.nodes.length, node.data.table.schema);
+              const newTable = createTable(`${node.data.table.name}_copy`, node.data.table.schema);
               newTable.color = node.data.table.color;
               newTable.columns = node.data.table.columns.map((c) => ({ ...createColumn(), ...c, id: createColumn().id }));
               const newNode = createTableNode(newTable, {
@@ -656,7 +655,7 @@ function convertEdgeToJunctionTable(diagram: Diagram, edgeId: string): Diagram {
   const rightPk = rightNode.data.table.columns.find((column) => column.id === edge.data!.targetColumnId) ?? primaryKey(rightNode.data.table);
   if (!leftPk || !rightPk) return diagram;
 
-  const junctionTable = createJunctionTable(leftNode.data.table, leftPk, rightNode.data.table, rightPk, diagram.nodes.length);
+  const junctionTable = createJunctionTable(leftNode.data.table, leftPk, rightNode.data.table, rightPk);
   const junctionNode = createTableNode(junctionTable, {
     x: (leftNode.position.x + rightNode.position.x) / 2,
     y: (leftNode.position.y + rightNode.position.y) / 2 + 180,
@@ -736,7 +735,7 @@ function hierarchicalAutoLayout(diagram: Diagram): Diagram {
 
   const NODE_W = 320;
   const nodeMap = new Map(nodes.map(n => [n.id, n]));
-  const nodeH = (id: string) => 56 + (nodeMap.get(id)?.data.table.columns.length ?? 4) * 30;
+  const nodeH = (id: string) => 44 + (nodeMap.get(id)?.data.table.columns.length ?? 4) * 23;
   const gridSize = diagram.settings?.gridSize ?? 20;
 
   const g = new dagre.graphlib.Graph();

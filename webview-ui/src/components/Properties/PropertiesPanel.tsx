@@ -185,7 +185,7 @@ function TableProperties({ tableId }: { tableId: string }) {
   };
 
   return (
-    <div className="px-4 py-4 space-y-5">
+    <div className="px-4 py-4 space-y-3">
       <Field label="Table name">
         <Input value={table.name} onChange={(e) => updateTable(tableId, { name: e.target.value })} className="font-mono text-xs" placeholder="table_name" />
       </Field>
@@ -439,7 +439,7 @@ function EdgeProperties({ edgeId }: { edgeId: string }) {
   const targetColumn = targetTable?.columns.find((c) => c.id === edge.data!.targetColumnId);
 
   return (
-    <div className="px-4 py-4 space-y-5">
+    <div className="px-4 py-4 space-y-3">
       <div className="rounded-lg border border-border bg-background/50 overflow-hidden">
         <div className="px-3 py-2.5 space-y-1">
           <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Parent / source</div>
@@ -552,8 +552,8 @@ function ValidationProperties() {
 
 function Field({ label, children, optional }: { label: string; children: React.ReactNode; optional?: boolean }) {
   return (
-    <div className="space-y-1.5">
-      <label className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+    <div className="space-y-1">
+      <label className="text-[10px] leading-3 font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
         {label}{optional && <span className="text-muted-foreground/50 normal-case font-normal tracking-normal">(optional)</span>}
       </label>
       {children}

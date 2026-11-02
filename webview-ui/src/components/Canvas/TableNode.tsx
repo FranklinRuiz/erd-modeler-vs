@@ -68,10 +68,10 @@ function TableNodeComponent({ data, selected, id }: NodeProps<TableNodeType>) {
       >
         {/* ── Table header ── */}
         <div
-          className="px-3 py-2.5 border-b border-border flex items-center gap-2 relative"
+          className="px-3 py-1.5 border-b border-border flex items-center gap-2 relative"
           style={{ background: `linear-gradient(135deg, ${table.color}1f, transparent 65%)` }}
         >
-          <div className="w-1 h-6 rounded-sm flex-shrink-0" style={{ backgroundColor: table.color }} />
+          <div className="w-1 h-5 rounded-sm flex-shrink-0" style={{ backgroundColor: table.color }} />
 
           <div className="flex-1 min-w-0">
             {editingName ? (
@@ -91,7 +91,7 @@ function TableNodeComponent({ data, selected, id }: NodeProps<TableNodeType>) {
             ) : (
               <h3
                 onDoubleClick={(e) => { e.stopPropagation(); setEditingName(true); }}
-                className="font-sans font-semibold text-[15px] truncate cursor-text"
+                className="font-sans font-semibold text-[15px] leading-5 truncate cursor-text"
                 title="Double-click to rename"
               >
                 <span className="font-normal text-muted-foreground">{table.schema ?? 'dbo'}.</span>{table.name}
@@ -105,7 +105,7 @@ function TableNodeComponent({ data, selected, id }: NodeProps<TableNodeType>) {
             <button
               title="Add column"
               onClick={(e) => { e.stopPropagation(); addColumn(id); }}
-              className="opacity-0 group-hover:opacity-100 w-6 h-6 rounded hover:bg-foreground/10 grid place-items-center transition-opacity"
+              className="opacity-0 group-hover:opacity-100 w-5 h-5 rounded hover:bg-foreground/10 grid place-items-center transition-opacity"
             >
               <Wand2 className="w-3 h-3" />
             </button>
@@ -147,7 +147,7 @@ function ColumnRow({ column, tableId, compact }: { column: Column; tableId: stri
   };
 
   return (
-    <div className="relative grid grid-cols-[18px_1fr_auto_86px] items-center gap-2 px-3 py-[5px] text-[13px] hover:bg-accent/40 transition-colors group/col">
+    <div className="relative grid grid-cols-[18px_1fr_auto_86px] items-center gap-2 px-3 py-[2px] text-[13px] leading-[18px] hover:bg-accent/40 transition-colors group/col">
 
       {/* Source handle */}
       <Handle
@@ -207,7 +207,7 @@ function ColumnRow({ column, tableId, compact }: { column: Column; tableId: stri
           onDoubleClick={(e) => { e.stopPropagation(); setEditing(true); }}
           title="Double-click to rename"
           className={cn(
-            'font-sans truncate text-foreground cursor-text',
+            'font-sans truncate text-foreground cursor-text -translate-y-px',
             column.isPrimaryKey && 'font-semibold',
           )}
         >
@@ -264,7 +264,7 @@ function Badge({ children, tone }: { children: React.ReactNode; tone: 'pk' | 'fk
     ai: 'bg-violet-500/15 text-violet-600 dark:text-violet-400',
     uk: 'bg-pink-500/15 text-pink-600 dark:text-pink-400',
   }[tone];
-  return <span className={cn('rounded px-1 leading-4', className)}>{children}</span>;
+  return <span className={cn('inline-flex items-center h-3.5 px-[3px] pt-[2px] rounded-sm leading-none', className)}>{children}</span>;
 }
 
 export const TableNode = memo(TableNodeComponent);

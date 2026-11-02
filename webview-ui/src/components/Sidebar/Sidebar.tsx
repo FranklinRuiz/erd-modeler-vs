@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import {
-  Plus,
   Search,
   X,
   MoreHorizontal,

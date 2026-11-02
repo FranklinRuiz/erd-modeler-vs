@@ -1,4 +1,4 @@
-import type { Diagram, ValidationIssue, Table, Column } from '@/types';
+import type { Diagram, ValidationIssue, Column } from '@/types';
 
 // SQL Server type families for FK compatibility checking
 const numericFamilies = ['INT', 'BIGINT', 'SMALLINT', 'TINYINT', 'DECIMAL', 'NUMERIC', 'FLOAT', 'REAL', 'MONEY', 'SMALLMONEY', 'BIT'];

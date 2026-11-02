@@ -52,7 +52,7 @@ export function createForeignKeyColumn(parentTable: Table, parentColumn: Column)
   });
 }
 
-export function createTable(name = 'new_table', existingCount = 0, schema = 'dbo'): Table {
+export function createTable(name = 'new_table', schema = 'dbo'): Table {
   return {
     id: generateId(),
     name,
@@ -114,8 +114,7 @@ export function createJunctionTable(
   leftTable: Table,
   leftPk: Column,
   rightTable: Table,
-  rightPk: Column,
-  existingCount = 0
+  rightPk: Column
 ): Table {
   const name = `${singularize(leftTable.name)}_${singularize(rightTable.name)}`;
   const leftFk = createForeignKeyColumn(leftTable, leftPk);

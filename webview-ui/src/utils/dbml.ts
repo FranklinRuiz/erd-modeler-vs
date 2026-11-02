@@ -142,7 +142,7 @@ export function parseDBMLToDiagram(text: string, diagramName = 'Imported Diagram
     }
     body = body.replace(/\bindexes\b[^{]*\{[\s\S]*?\}/i, '');
 
-    const table = createTable(tableName, tables.length, schema);
+    const table = createTable(tableName, schema);
     table.comment = tableComment;
     table.columns = [];
 
