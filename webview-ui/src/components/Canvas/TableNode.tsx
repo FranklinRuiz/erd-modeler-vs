@@ -264,7 +264,12 @@ function Badge({ children, tone }: { children: React.ReactNode; tone: 'pk' | 'fk
     ai: 'bg-violet-500/15 text-violet-600 dark:text-violet-400',
     uk: 'bg-pink-500/15 text-pink-600 dark:text-pink-400',
   }[tone];
-  return <span className={cn('inline-flex items-center h-3.5 px-[3px] pt-[2px] rounded-sm leading-none', className)}>{children}</span>;
+  return (
+    <span className={cn('inline-flex items-center h-3.5 px-[3px] rounded-sm leading-none', className)}>
+      {/* Trim the line box to cap height so items-center centers the letters themselves, not the font's ascent/descent. */}
+      <span className="block [text-box:trim-both_cap_alphabetic]">{children}</span>
+    </span>
+  );
 }
 
 export const TableNode = memo(TableNodeComponent);
