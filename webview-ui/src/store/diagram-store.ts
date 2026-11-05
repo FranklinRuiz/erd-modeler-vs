@@ -735,7 +735,7 @@ function hierarchicalAutoLayout(diagram: Diagram): Diagram {
 
   const NODE_W = 320;
   const nodeMap = new Map(nodes.map(n => [n.id, n]));
-  const nodeH = (id: string) => 44 + (nodeMap.get(id)?.data.table.columns.length ?? 4) * 23;
+  const nodeH = (id: string) => 44 + (nodeMap.get(id)?.data.table.columns.length ?? 4) * 25;
   const gridSize = diagram.settings?.gridSize ?? 20;
 
   const g = new dagre.graphlib.Graph();

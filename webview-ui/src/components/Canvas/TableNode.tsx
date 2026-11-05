@@ -58,7 +58,7 @@ function TableNodeComponent({ data, selected, id }: NodeProps<TableNodeType>) {
       <div
         onClick={() => selectTable(id)}
         className={cn(
-          'rounded-lg overflow-hidden bg-card text-card-foreground shadow-sm dark:shadow-lg dark:shadow-black/40 border transition-all',
+          'rounded-[5px] overflow-hidden bg-card text-card-foreground shadow-sm dark:shadow-lg dark:shadow-black/40 border transition-all',
           selected
             ? 'border-primary/50 shadow-md dark:shadow-black/50 ring-1 ring-primary/10'
             : 'border-border hover:border-foreground/30 hover:shadow-md dark:hover:shadow-black/50',
@@ -147,7 +147,7 @@ function ColumnRow({ column, tableId, compact }: { column: Column; tableId: stri
   };
 
   return (
-    <div className="relative grid grid-cols-[18px_1fr_auto_86px] items-center gap-2 px-3 py-[2px] text-[13px] leading-[18px] hover:bg-accent/40 transition-colors group/col">
+    <div className="relative grid grid-cols-[18px_1fr_auto_86px] items-center gap-2 px-3 py-[3px] first:pt-[4px] text-[13px] leading-[18px] hover:bg-accent/40 transition-colors group/col">
 
       {/* Source handle */}
       <Handle
