@@ -67,6 +67,7 @@ interface DiagramStore {
   addColumn: (tableId: string) => void;
   updateColumn: (tableId: string, columnId: string, updates: Partial<Column>) => void;
   deleteColumn: (tableId: string, columnId: string) => void;
+  duplicateColumn: (tableId: string, columnId: string) => void;
   reorderColumns: (tableId: string, fromIndex: number, toIndex: number) => void;
 
   createRelationshipBetweenTables: (sourceTableId: string, targetTableId: string, type?: RelationType) => void;
@@ -353,6 +354,34 @@ export const useDiagramStore = create<DiagramStore>()(
                   : n
               ),
               edges: d.edges.filter((e) => e.data?.sourceColumnId !== columnId && e.data?.targetColumnId !== columnId),
+            })),
+          }));
+        },
+
+        duplicateColumn: (tableId, columnId) => {
+          set((state) => ({
+            ...pushHistory(state, null),
+            ...updateActive(state, (d) => ({
+              ...d,
+              nodes: d.nodes.map((n) => {
+                if (n.id !== tableId) return n;
+                const columns = [...n.data.table.columns];
+                const index = columns.findIndex((c) => c.id === columnId);
+                if (index === -1) return n;
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { id: _id, ...source } = columns[index];
+                // The copy is a plain column: a second PK or a dangling FK reference would be invalid.
+                const copy = createColumn({
+                  ...source,
+                  name: `${source.name}_copy`,
+                  isPrimaryKey: false,
+                  isAutoIncrement: false,
+                  isForeignKey: false,
+                  references: undefined,
+                });
+                columns.splice(index + 1, 0, copy);
+                return { ...n, data: { ...n.data, table: { ...n.data.table, columns } } };
+              }),
             })),
           }));
         },

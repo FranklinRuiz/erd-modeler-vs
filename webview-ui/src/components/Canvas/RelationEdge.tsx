@@ -5,9 +5,9 @@ import {
   getSmoothStepPath,
   type EdgeProps,
 } from '@xyflow/react';
-import { X, Link2 } from 'lucide-react';
+import { Link2 } from 'lucide-react';
 import type { RelationEdge as RelationEdgeType, RelationType } from '@/types';
-import { useDiagramStore, useUIStore } from '@/store';
+import { useUIStore } from '@/store';
 import { cn } from '@/lib/utils';
 import { dirVector } from '@/utils/edgeLanes';
 
@@ -30,10 +30,14 @@ function RelationEdgeComponent({
   sourcePosition,
   targetPosition,
   data,
-  selected,
+  selected: flowSelected,
 }: EdgeProps<RelationEdgeType>) {
-  const deleteEdge = useDiagramStore((s) => s.deleteEdge);
   const selectEdge = useUIStore((s) => s.selectEdge);
+  // React Flow drops its own selection when the canvas is clicked or the relation is opened from
+  // its label, while the Relation Designer stays open; follow the panel so the edited relation
+  // stays highlighted for as long as it's being edited.
+  const isOpenInDesigner = useUIStore((s) => s.selectedEdgeId === id);
+  const selected = flowSelected || isOpenInDesigner;
 
   const sourceFanCount = data?.sourceFanCount ?? 1;
   const targetFanCount = data?.targetFanCount ?? 1;
@@ -192,7 +196,7 @@ function RelationEdgeComponent({
             className={cn(
               'px-2 py-0.5 rounded-full text-[10px] font-mono tracking-tight border transition-all cursor-pointer flex items-center gap-1 whitespace-nowrap',
               selected
-                ? 'bg-primary text-primary-foreground border-primary shadow-md'
+                ? 'bg-zinc-200 text-zinc-900 border-zinc-400 shadow-md dark:bg-zinc-700 dark:text-zinc-50 dark:border-zinc-500'
                 : 'bg-card/75 text-muted-foreground border-border hover:bg-card hover:border-foreground/40 hover:text-foreground'
             )}
             title={label}
@@ -205,19 +209,6 @@ function RelationEdgeComponent({
               <span className={cn(isActive ? 'inline' : 'hidden', 'group-hover/label:inline')}>· {label}</span>
             )}
           </button>
-          {selected && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                deleteEdge(id);
-                selectEdge(null);
-              }}
-              className="ml-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center hover:bg-destructive/90 transition-colors"
-              title="Delete relation"
-            >
-              <X className="w-3 h-3" />
-            </button>
-          )}
         </div>
       </EdgeLabelRenderer>
     </>

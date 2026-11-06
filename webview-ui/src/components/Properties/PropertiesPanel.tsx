@@ -14,6 +14,8 @@ import {
   Table2,
   Check,
   ArrowDown,
+  ArrowUp,
+  Copy,
 } from 'lucide-react';
 import { Input } from '@/components/UI/input';
 import { Button } from '@/components/UI/button';
@@ -25,6 +27,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/UI/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/UI/dropdown-menu';
 import { toast } from 'sonner';
 import { useDiagramStore, useUIStore } from '@/store';
 import { REFERENTIAL_ACTIONS, type Column, type RelationType, type ReferentialAction } from '@/types';
@@ -235,6 +244,7 @@ function TableProperties({ tableId }: { tableId: string }) {
           <span className="flex-1 min-w-0">Name</span>
           <span className="w-24 flex-shrink-0">Type</span>
           <span className="w-14 flex-shrink-0 text-right">Flags</span>
+          <div className="w-5 flex-shrink-0" />
           <div className="w-4 flex-shrink-0" />
         </div>
         <div className="divide-y divide-border/50">
@@ -245,7 +255,7 @@ function TableProperties({ tableId }: { tableId: string }) {
       </div>
 
       <div className="pt-2 border-t border-border">
-        <Button variant="destructive" size="sm" onClick={handleDelete} className="w-full gap-2">
+        <Button variant="destructive" size="sm" onClick={handleDelete} className="w-full gap-2 bg-destructive/35 text-destructive dark:text-red-50 hover:bg-destructive/45">
           <Trash2 className="w-3.5 h-3.5" /> Delete Table
         </Button>
       </div>
@@ -260,6 +270,23 @@ function ColumnEditor({ column, tableId, index, totalColumns }: { column: Column
   const dragAllowedRef = useRef(false);
   const updateColumn = useDiagramStore((s) => s.updateColumn);
   const deleteColumn = useDiagramStore((s) => s.deleteColumn);
+  const duplicateColumn = useDiagramStore((s) => s.duplicateColumn);
+  const undo = useDiagramStore((s) => s.undo);
+  // Right-click opens the column menu at the cursor; null while closed.
+  const [menuAt, setMenuAt] = useState<{ x: number; y: number } | null>(null);
+
+  // Deleting is one click with no confirmation; the toast's Undo is the safety net.
+  const handleDelete = () => {
+    deleteColumn(tableId, column.id);
+    toast(`Column "${column.name}" deleted`, { action: { label: 'Undo', onClick: undo } });
+  };
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    // Inside text fields keep the native Cut/Copy/Paste menu.
+    if ((e.target as HTMLElement).closest('input, textarea, button[role="combobox"]')) return;
+    e.preventDefault();
+    setMenuAt({ x: e.clientX, y: e.clientY });
+  };
   const reorderColumns = useDiagramStore((s) => s.reorderColumns);
 
   // Dragging is only allowed when initiated from the grip handle (dragAllowedRef),
@@ -326,7 +353,7 @@ function ColumnEditor({ column, tableId, index, totalColumns }: { column: Column
   return (
     <div
       className={cn(
-        'bg-background/50 transition-all',
+        'group/row bg-background/50 transition-all',
         expanded && 'bg-accent/20',
         isDragging && 'opacity-40',
         isDragOver && 'border-t-2 border-primary',
@@ -337,7 +364,29 @@ function ColumnEditor({ column, tableId, index, totalColumns }: { column: Column
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
+      onContextMenu={handleContextMenu}
     >
+      <DropdownMenu open={menuAt !== null} onOpenChange={(open) => { if (!open) setMenuAt(null); }}>
+        {/* Zero-size anchor at the cursor so the menu opens where the user right-clicked. */}
+        <DropdownMenuTrigger asChild>
+          <span aria-hidden className="fixed w-0 h-0 pointer-events-none" style={{ left: menuAt?.x ?? 0, top: menuAt?.y ?? 0 }} />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" sideOffset={0} className="min-w-[11rem]">
+          <DropdownMenuItem className="text-xs" onSelect={() => duplicateColumn(tableId, column.id)}>
+            <Copy className="w-3.5 h-3.5" /> Duplicate
+          </DropdownMenuItem>
+          <DropdownMenuItem className="text-xs" disabled={index === 0} onSelect={() => reorderColumns(tableId, index, index - 1)}>
+            <ArrowUp className="w-3.5 h-3.5" /> Move up
+          </DropdownMenuItem>
+          <DropdownMenuItem className="text-xs" disabled={index === totalColumns - 1} onSelect={() => reorderColumns(tableId, index, index + 1)}>
+            <ArrowDown className="w-3.5 h-3.5" /> Move down
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem className="text-xs text-destructive focus:text-destructive focus:bg-destructive/10" onSelect={handleDelete}>
+            <Trash2 className="w-3.5 h-3.5" /> Delete column
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
       <div className="flex items-center gap-1.5 pl-2 pr-2 py-1">
         <GripVertical
           className="w-3 h-3 text-muted-foreground/40 flex-shrink-0 cursor-grab active:cursor-grabbing"
@@ -369,13 +418,21 @@ function ColumnEditor({ column, tableId, index, totalColumns }: { column: Column
           <ToggleIcon active={column.isUnique} onClick={() => updateColumn(tableId, column.id, { isUnique: !column.isUnique })} color="hsl(var(--erd-unique))" icon={<Hash className="w-3 h-3" />} title="Unique" />
         </div>
 
+        <button
+          onClick={handleDelete}
+          title="Delete column"
+          className="w-5 h-5 flex-shrink-0 rounded grid place-items-center text-muted-foreground opacity-0 group-hover/row:opacity-100 focus-visible:opacity-100 hover:text-destructive hover:bg-destructive/10 transition-opacity"
+        >
+          <Trash2 className="w-3 h-3" />
+        </button>
+
         <button onClick={() => setExpanded(!expanded)} className="w-4 flex-shrink-0 text-muted-foreground hover:text-foreground flex items-center justify-center">
           {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
         </button>
       </div>
 
       {expanded && (
-        <div className="px-2 pb-1.5 space-y-1.5 border-t border-border/50 pt-1.5">
+        <div className="px-2 pb-3 space-y-1.5 border-t border-border/50 pt-1.5">
           <div className={cn('grid gap-1.5', canAutoIncrement ? 'grid-cols-2' : 'grid-cols-1')}>
             <SwitchRow compact label="Not Null" checked={!column.isNullable} onChange={(v) => updateColumn(tableId, column.id, { isNullable: !v })} disabled={column.isPrimaryKey} />
             {canAutoIncrement && (
@@ -408,11 +465,6 @@ function ColumnEditor({ column, tableId, index, totalColumns }: { column: Column
               FK reference: {column.references.tableId}.{column.references.columnId}
             </div>
           )}
-          <div className="flex items-center gap-1 pt-1">
-            <Button variant="ghost" size="sm" className="h-6 px-1.5 text-[10px] flex-1" disabled={index === 0} onClick={() => reorderColumns(tableId, index, index - 1)}>↑ Up</Button>
-            <Button variant="ghost" size="sm" className="h-6 px-1.5 text-[10px] flex-1" disabled={index === totalColumns - 1} onClick={() => reorderColumns(tableId, index, index + 1)}>↓ Down</Button>
-            <Button variant="ghost" size="sm" className="h-6 px-1.5 text-[10px] text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => deleteColumn(tableId, column.id)}><Trash2 className="w-3 h-3" /></Button>
-          </div>
         </div>
       )}
     </div>
@@ -510,10 +562,11 @@ function EdgeProperties({ edgeId }: { edgeId: string }) {
       </div>
 
       <div className="space-y-2">
-        <Button variant="outline" size="sm" onClick={() => convertManyToManyRelation(edgeId)} className="w-full gap-2">
+        {/* Secondary fill a step lighter than the panel, like VS Code's native secondary buttons. */}
+        <Button variant="secondary" size="sm" onClick={() => convertManyToManyRelation(edgeId)} className="w-full gap-2 bg-foreground/10 hover:bg-foreground/15">
           <Table2 className="w-3.5 h-3.5" /> Generate junction table
         </Button>
-        <Button variant="destructive" size="sm" onClick={() => { deleteEdge(edgeId); selectEdge(null); }} className="w-full gap-2">
+        <Button variant="destructive" size="sm" onClick={() => { deleteEdge(edgeId); selectEdge(null); }} className="w-full gap-2 bg-destructive/35 text-destructive dark:text-red-50 hover:bg-destructive/45">
           <Trash2 className="w-3.5 h-3.5" /> Delete Relation
         </Button>
       </div>
