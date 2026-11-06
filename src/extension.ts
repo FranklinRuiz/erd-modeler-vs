@@ -140,8 +140,7 @@ function getWebviewHtml(webview: vscode.Webview, distUri: vscode.Uri): string {
   const csp = [
     `default-src 'none'`,
     `img-src ${webview.cspSource} data:`,
-    `style-src ${webview.cspSource} 'unsafe-inline' https://fonts.googleapis.com`,
-    `font-src https://fonts.gstatic.com`,
+    `style-src ${webview.cspSource} 'unsafe-inline'`,
     `script-src 'nonce-${nonce}' ${webview.cspSource}`,
   ].join('; ');
 

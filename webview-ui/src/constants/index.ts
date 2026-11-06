@@ -21,3 +21,6 @@ export const DEFAULT_TABLE_COLOR = '#94a3b8';
 
 export const DEFAULT_VIEWPORT = { x: 0, y: 0, zoom: 1 };
 
+// Fitting a large diagram on open would zoom out until column text is unreadable; stop at 80%
+// and let the toolbar's Fit view show everything on demand.
+export const OPEN_FIT_VIEW = { padding: 0.2, minZoom: 0.8, maxZoom: 1 };

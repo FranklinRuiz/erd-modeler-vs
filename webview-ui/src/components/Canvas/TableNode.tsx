@@ -207,7 +207,9 @@ function ColumnRow({ column, tableId, compact }: { column: Column; tableId: stri
           onDoubleClick={(e) => { e.stopPropagation(); setEditing(true); }}
           title="Double-click to rename"
           className={cn(
-            'font-sans truncate text-foreground cursor-text -translate-y-px',
+            // The line box centers Inter's capitals, while its x-height sits ~1px lower; a half-pixel
+            // lift splits the difference so lowercase and all-caps names both read as centered.
+            'font-sans truncate text-foreground cursor-text -translate-y-[0.5px]',
             column.isPrimaryKey && 'font-semibold',
           )}
         >
@@ -216,12 +218,12 @@ function ColumnRow({ column, tableId, compact }: { column: Column; tableId: stri
       )}
 
       {/* Data type — read only, hidden when zoomed far out (unreadable + adds noise) */}
-      <span className={cn('font-mono text-[11px] lowercase text-muted-foreground truncate', compact && 'invisible')}>
+      <span className={cn('font-mono text-[12px] lowercase text-foreground/65 truncate', compact && 'invisible')}>
         {column.type}
       </span>
 
       {/* Constraint badges */}
-      <div className={cn('flex items-center justify-end gap-1 text-[10px] font-mono font-medium uppercase', compact && 'invisible')}>
+      <div className={cn('flex items-center justify-end gap-1 text-[11px] font-mono font-medium uppercase', compact && 'invisible')}>
         {column.isPrimaryKey && <Badge tone="pk">PK</Badge>}
         {!column.isNullable && <Badge tone="nn">NN</Badge>}
         {column.isAutoIncrement && <Badge tone="ai">AI</Badge>}

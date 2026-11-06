@@ -22,7 +22,7 @@ import { TableNode } from './TableNode';
 import { RelationEdge } from './RelationEdge';
 import { useDiagramStore, useUIStore } from '@/store';
 import type { RelationEdge as RelationEdgeType } from '@/types';
-import { DEFAULT_VIEWPORT } from '@/constants';
+import { DEFAULT_VIEWPORT, OPEN_FIT_VIEW } from '@/constants';
 import { useTheme } from '@/hooks/use-theme';
 import { getTableValidationLevel } from '@/utils/validation';
 import { registerFlowInstance } from '@/utils/flowInstance';
@@ -30,6 +30,8 @@ import { computeEdgeLanes, dirVector, STEP_OFFSET, type EdgeGeometry } from '@/u
 
 const nodeTypes: NodeTypes = { tableNode: TableNode };
 const edgeTypes: EdgeTypes = { relationEdge: RelationEdge };
+// Stable fallback so the memos keyed on rawEdges don't recompute every render with no diagram.
+const NO_EDGES: RelationEdgeType[] = [];
 
 export function Canvas() {
   const theme = useTheme();
@@ -109,7 +111,7 @@ export function Canvas() {
   const focusTableId =
     hoveredTableId ?? (selectedTableIds.length <= 1 ? selectedTableId : null);
 
-  const rawEdges = activeDiagram?.edges ?? [];
+  const rawEdges = activeDiagram?.edges ?? NO_EDGES;
 
   const { connectedNodeIds, connectedEdgeIds } = useMemo(() => {
     if (!focusTableId) return { connectedNodeIds: null, connectedEdgeIds: null };
@@ -271,6 +273,9 @@ export function Canvas() {
       });
     }
     return computeEdgeLanes(geometries);
+    // nodeLookup is mutated in place as handles are measured, so nodesInitialized and
+    // measuredHandleCount are the signals that force this to re-run (see their comments above).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rawEdges, fanAssignment, nodeLookup, nodesInitialized, measuredHandleCount]);
 
   const edges = useMemo((): RelationEdgeType[] => {
@@ -333,7 +338,7 @@ export function Canvas() {
         snapToGrid={settings?.snapToGrid ?? true}
         snapGrid={[settings?.gridSize ?? 20, settings?.gridSize ?? 20]}
         fitView={nodes.length > 0}
-        fitViewOptions={{ padding: 0.2, maxZoom: 1 }}
+        fitViewOptions={OPEN_FIT_VIEW}
         proOptions={{ hideAttribution: true }}
         minZoom={0.15}
         maxZoom={2.5}

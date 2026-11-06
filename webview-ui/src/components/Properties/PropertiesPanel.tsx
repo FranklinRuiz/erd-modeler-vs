@@ -525,7 +525,9 @@ function ValidationProperties() {
   // Stable selector — returns the diagram object reference (no .map / new arrays inside).
   const activeDiagram = useDiagramStore((s) => s.diagrams.find((d) => d.id === s.activeDiagramId));
   const validateActiveDiagram = useDiagramStore((s) => s.validateActiveDiagram);
-  // Derive issues outside the selector so the array is memoized.
+  // Derive issues outside the selector so the array is memoized. validateActiveDiagram reads
+  // the store itself, so activeDiagram is the dependency that re-runs it when the diagram changes.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const issues = useMemo(() => validateActiveDiagram(), [activeDiagram, validateActiveDiagram]);
 
   return (

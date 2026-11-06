@@ -52,4 +52,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 );
 Button.displayName = 'Button';
 
+// buttonVariants is shared with other components (shadcn pattern); the only cost is a full
+// reload instead of a hot update when this file changes in dev.
+// eslint-disable-next-line react-refresh/only-export-components
 export { Button, buttonVariants };

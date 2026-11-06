@@ -5,9 +5,11 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        display: ['"JetBrains Mono"', 'monospace'],
-        sans: ['"Inter"', 'system-ui', 'sans-serif'],
-        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+        // VS Code injects its own fonts into every webview (workbench UI font + the user's
+        // editor font); the fallbacks only apply in the standalone vite dev server.
+        display: ['var(--vscode-editor-font-family, Consolas, "Courier New", monospace)'],
+        sans: ['var(--vscode-font-family, "Segoe WPC", "Segoe UI", system-ui, sans-serif)'],
+        mono: ['var(--vscode-editor-font-family, Consolas, "Courier New", monospace)'],
       },
       colors: {
         border: 'hsl(var(--border))',

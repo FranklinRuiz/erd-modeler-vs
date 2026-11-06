@@ -33,8 +33,13 @@ export function postToExtension(message: Record<string, unknown>): void {
   getApi()?.postMessage(message);
 }
 
-export function onExtensionMessage(handler: (message: any) => void): () => void {
-  const listener = (event: MessageEvent) => handler(event.data);
+/** Messages the extension host (src/extension.ts) posts into this webview. */
+export type ExtensionMessage =
+  | { command: 'loadDiagram'; json: string }
+  | { command: 'refresh' };
+
+export function onExtensionMessage(handler: (message: ExtensionMessage | undefined) => void): () => void {
+  const listener = (event: MessageEvent<ExtensionMessage | undefined>) => handler(event.data);
   window.addEventListener('message', listener);
   return () => window.removeEventListener('message', listener);
 }

@@ -5,6 +5,7 @@ import { exportDiagramAsJSON, importDiagramFromJSON } from '@/utils/export';
 import { createDiagram } from '@/utils/factories';
 import { getFlowInstance } from '@/utils/flowInstance';
 import { isVSCode, onExtensionMessage, postToExtension } from '@/lib/vscode-bridge';
+import { OPEN_FIT_VIEW } from '@/constants';
 
 const DEBOUNCE_MS = 400;
 
@@ -31,7 +32,7 @@ export function useVscodeBridge() {
         // now-current container size.
         requestAnimationFrame(() => {
           window.dispatchEvent(new Event('resize'));
-          getFlowInstance()?.fitView({ duration: 0 });
+          getFlowInstance()?.fitView({ ...OPEN_FIT_VIEW, duration: 0 });
         });
         return;
       }
